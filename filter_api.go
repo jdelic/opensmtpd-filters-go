@@ -18,10 +18,10 @@ package opensmtpd
 
 import (
 	"bufio"
-	"encoding/json"
+
 	"fmt"
 	"log"
-	"net/http"
+
 	"os"
 	"strings"
 )
@@ -93,91 +93,91 @@ type SMTPSession struct {
 type EventHandler = func(sessionId string, params[] string)
 type FilterDispatchMap = map[string]EventHandler
 
-type linkConnectFilter interface {
+type LinkConnectFilter interface {
 	LinkConnect(string, []string)
 }
 
-type linkDisconnectFilter interface {
+type LinkDisconnectFilter interface {
 	LinkDisconnect(string, []string)
 }
 
-type linkGreetingFilter interface {
+type LinkGreetingFilter interface {
 	LinkGreeting(string, []string)
 }
 
-type linkIdentifyFilter interface {
+type LinkIdentifyFilter interface {
 	LinkIdentity(string, []string)
 }
 
-type linkTLSFilter interface {
+type LinkTLSFilter interface {
 	LinkTLS(string, []string)
 }
 
-type linkAuthFilter interface {
+type LinkAuthFilter interface {
 	LinkAuth(string, []string)
 }
 
-type txResetFilter interface {
+type TxResetFilter interface {
 	TxReset(string, []string)
 }
 
-type txBeginFilter interface {
+type TxBeginFilter interface {
 	TxBegin(string, []string)
 }
 
-type txMailFilter interface {
+type TxMailFilter interface {
 	TxMail(string, []string)
 }
 
-type txRcptFilter interface {
+type TxRcptFilter interface {
 	TxRcpt(string, []string)
 }
 
-type txEnvelopeFilter interface {
+type TxEnvelopeFilter interface {
 	TxEnvelope(string, []string)
 }
 
-type txDataFilter interface {
+type TxDataFilter interface {
 	TxData(string, []string)
 }
 
-type txCommitFilter interface {
+type TxCommitFilter interface {
 	TxCommit(string, []string)
 }
 
-type txRollbackFilter interface {
+type TxRollbackFilter interface {
 	TxRollback(string, []string)
 }
 
-type protocolClientFilter interface {
+type ProtocolClientFilter interface {
 	ProtocolClient(string, []string)
 }
 
-type protocolServerFilter interface {
+type ProtocolServerFilter interface {
 	ProtocolServer(string, []string)
 }
 
-type filterReportFilter interface {
+type FilterReportFilter interface {
 	FilterReport(string, []string)
 }
 
-type filterResponseFilter interface {
+type FilterResponseFilter interface {
 	FilterResponse(string, []string)
 }
 
-type timeoutFilter interface {
+type TimeoutFilter interface {
 	Timeout(string, []string)
 }
 
-type datalineFilter interface {
+type DatalineFilter interface {
 	Dataline(string, []string)
 }
 
-type commitFilter interface {
+type CommitFilter interface {
 	Commit(string, []string)
 }
 
-type configReceiver interface {
+type ConfigReceiver interface {
 	Config([]string)
 }
 
@@ -189,69 +189,69 @@ func setIfSet(themap map[string]EventHandler, handler EventHandler, key string) 
 
 func GetMapping(filter interface{}) (FilterDispatchMap, FilterDispatchMap) {
 	reporters := make(map[string]EventHandler)
-	if f, ok := filter.(linkConnectFilter); ok {
+	if f, ok := filter.(LinkConnectFilter); ok {
 		setIfSet(reporters, f.LinkConnect, "link-connect")
 	}
-	if f, ok := filter.(linkDisconnectFilter); ok {
+	if f, ok := filter.(LinkDisconnectFilter); ok {
 		setIfSet(reporters, f.LinkDisconnect, "link-disconnect")
 	}
-	if f, ok := filter.(linkGreetingFilter); ok {
+	if f, ok := filter.(LinkGreetingFilter); ok {
 		setIfSet(reporters, f.LinkGreeting, "link-greeting")
 	}
-	if f, ok := filter.(linkIdentifyFilter); ok {
+	if f, ok := filter.(LinkIdentifyFilter); ok {
 		setIfSet(reporters, f.LinkIdentity, "link-identify")
 	}
-	if f, ok := filter.(linkTLSFilter); ok {
+	if f, ok := filter.(LinkTLSFilter); ok {
 		setIfSet(reporters, f.LinkTLS, "link-tls")
 	}
-	if f, ok := filter.(linkAuthFilter); ok {
+	if f, ok := filter.(LinkAuthFilter); ok {
 		setIfSet(reporters, f.LinkAuth, "link-auth")
 	}
-	if f, ok := filter.(txResetFilter); ok {
+	if f, ok := filter.(TxResetFilter); ok {
 		setIfSet(reporters, f.TxReset, "tx-reset")
 	}
-	if f, ok := filter.(txBeginFilter); ok {
+	if f, ok := filter.(TxBeginFilter); ok {
 		setIfSet(reporters, f.TxBegin, "tx-begin")
 	}
-	if f, ok := filter.(txMailFilter); ok {
+	if f, ok := filter.(TxMailFilter); ok {
 		setIfSet(reporters, f.TxMail, "tx-mail")
 	}
-	if f, ok := filter.(txRcptFilter); ok {
+	if f, ok := filter.(TxRcptFilter); ok {
 		setIfSet(reporters, f.TxRcpt, "tx-rcpt")
 	}
-	if f, ok := filter.(txEnvelopeFilter); ok {
+	if f, ok := filter.(TxEnvelopeFilter); ok {
 		setIfSet(reporters, f.TxEnvelope, "tx-envelope")
 	}
-	if f, ok := filter.(txDataFilter); ok {
+	if f, ok := filter.(TxDataFilter); ok {
 		setIfSet(reporters, f.TxData, "tx-data")
 	}
-	if f, ok := filter.(txCommitFilter); ok {
+	if f, ok := filter.(TxCommitFilter); ok {
 		setIfSet(reporters, f.TxCommit, "tx-commit")
 	}
-	if f, ok := filter.(txRollbackFilter); ok {
+	if f, ok := filter.(TxRollbackFilter); ok {
 		setIfSet(reporters, f.TxRollback, "tx-rollback")
 	}
-	if f, ok := filter.(protocolClientFilter); ok {
+	if f, ok := filter.(ProtocolClientFilter); ok {
 		setIfSet(reporters, f.ProtocolClient, "protocol-client")
 	}
-	if f, ok := filter.(protocolServerFilter); ok {
+	if f, ok := filter.(ProtocolServerFilter); ok {
 		setIfSet(reporters, f.ProtocolServer, "protocol-server")
 	}
-	if f, ok := filter.(timeoutFilter); ok {
+	if f, ok := filter.(TimeoutFilter); ok {
 		setIfSet(reporters, f.Timeout, "timeout")
 	}
 
 	filters := make(map[string]EventHandler)
-	if f, ok := filter.(datalineFilter); ok {
+	if f, ok := filter.(DatalineFilter); ok {
 		setIfSet(filters, f.Dataline, "data-line")
 	}
-	if f, ok := filter.(commitFilter); ok {
+	if f, ok := filter.(CommitFilter); ok {
 		setIfSet(filters, f.Commit, "commit")
 	}
-	if f, ok := filter.(filterResponseFilter); ok {
+	if f, ok := filter.(FilterResponseFilter); ok {
 		setIfSet(filters, f.FilterResponse, "filter-response")
 	}
-	if f, ok := filter.(filterReportFilter); ok {
+	if f, ok := filter.(FilterReportFilter); ok {
 		setIfSet(filters, f.FilterReport, "filter-report")
 	}
 
@@ -381,7 +381,7 @@ func (sf SessionTrackingFilter) Dataline(sessionId string, params []string) {
 	if len(params) < 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
-	token := params[0]
+	//token := params[0]
 	line := strings.Join(params[1:], "|")
 
 	s := sf.Sessions[sessionId]
@@ -463,7 +463,7 @@ func ProcessConfig(scanner *bufio.Scanner, filter interface{}) {
 			os.Exit(0)
 		}
 		line := scanner.Text()
-		if cr, ok := filter.(configReceiver); ok {
+		if cr, ok := filter.(ConfigReceiver); ok {
 			cr.Config(strings.Split(line, "|"))
 		}
 		if line == "config|ready" {
@@ -475,6 +475,8 @@ func ProcessConfig(scanner *bufio.Scanner, filter interface{}) {
 func Run(filter interface{}) {
 	scanner := bufio.NewScanner(os.Stdin)
 	ProcessConfig(scanner, filter)
+
+	Register(filter)
 
 	for {
 		if !scanner.Scan() {
