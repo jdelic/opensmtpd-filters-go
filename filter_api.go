@@ -40,9 +40,6 @@ type SMTPSession struct {
 	mailFrom string
 	rcptTo []string
 	message []string
-
-	action string
-	response string
 }
 
 /*
@@ -273,7 +270,7 @@ type SessionTrackingFilter struct {
 	Sessions map[string]SMTPSession
 }
 
-func (sf SessionTrackingFilter) LinkConnect(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) LinkConnect(sessionId string, params []string) {
 	if len(params) != 4 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -285,14 +282,14 @@ func (sf SessionTrackingFilter) LinkConnect(sessionId string, params []string) {
 	sf.Sessions[s.id] = s
 }
 
-func (sf SessionTrackingFilter) LinkDisconnect(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) LinkDisconnect(sessionId string, params []string) {
 	if len(params) != 0 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	delete(sf.Sessions, sessionId)
 }
 
-func (sf SessionTrackingFilter) LinkGreeting(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) LinkGreeting(sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -302,7 +299,7 @@ func (sf SessionTrackingFilter) LinkGreeting(sessionId string, params []string) 
 	sf.Sessions[s.id] = s
 }
 
-func (sf SessionTrackingFilter) LinkIdentify(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) LinkIdentify(sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -312,7 +309,7 @@ func (sf SessionTrackingFilter) LinkIdentify(sessionId string, params []string) 
 	sf.Sessions[s.id] = s
 }
 
-func (sf SessionTrackingFilter) LinkAuth(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) LinkAuth(sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -324,7 +321,7 @@ func (sf SessionTrackingFilter) LinkAuth(sessionId string, params []string) {
 	sf.Sessions[s.id] = s
 }
 
-func (sf SessionTrackingFilter) TxReset(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) TxReset(sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -334,12 +331,10 @@ func (sf SessionTrackingFilter) TxReset(sessionId string, params []string) {
 	s.mailFrom = ""
 	s.rcptTo = nil
 	s.message = nil
-	s.action = ""
-	s.response = ""
 	sf.Sessions[s.id] = s
 }
 
-func (sf SessionTrackingFilter) TxBegin(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) TxBegin(sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -349,7 +344,7 @@ func (sf SessionTrackingFilter) TxBegin(sessionId string, params []string) {
 	sf.Sessions[s.id] = s
 }
 
-func (sf SessionTrackingFilter) TxMail(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) TxMail(sessionId string, params []string) {
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -363,7 +358,7 @@ func (sf SessionTrackingFilter) TxMail(sessionId string, params []string) {
 	sf.Sessions[s.id] = s
 }
 
-func (sf SessionTrackingFilter) TxRcpt(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) TxRcpt(sessionId string, params []string) {
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -377,7 +372,7 @@ func (sf SessionTrackingFilter) TxRcpt(sessionId string, params []string) {
 	sf.Sessions[s.id] = s
 }
 
-func (sf SessionTrackingFilter) Dataline(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) Dataline(sessionId string, params []string) {
 	if len(params) < 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -394,44 +389,35 @@ func (sf SessionTrackingFilter) Dataline(sessionId string, params []string) {
 	sf.Sessions[sessionId] = s
 }
 
-func (sf SessionTrackingFilter) Commit(sessionId string, params []string) {
+func (sf *SessionTrackingFilter) Commit(sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	token := params[0]
+/*	token := params[0]
 	s := sf.Sessions[sessionId]
 
 	switch s.action {
 	case "reject":
-		if s.response == "" {
-			s.response = "message rejected"
-		}
 		fmt.Printf("filter-result|%s|%s|reject|550 %s\n", token, sessionId, s.response)
 	case "greylist":
-		if s.response == "" {
-			s.response = "try again later"
-		}
 		fmt.Printf("filter-result|%s|%s|reject|421 %s\n", token, sessionId, s.response)
 	case "soft reject":
-		if s.response == "" {
-			s.response = "try again later"
-		}
 		fmt.Printf("filter-result|%s|%s|reject|451 %s\n", token, sessionId, s.response)
 	default:
 		fmt.Printf("filter-result|%s|%s|proceed\n", token, sessionId)
-	}
+	}*/
 }
 
 
-func FlushMessage(s SMTPSession, token string) {
+func FlushMessage(s *SMTPSession, token string) {
 	for _, line := range s.message {
 		fmt.Printf("filter-dataline|%s|%s|%s\n", token, s.id, line)
 	}
 	fmt.Printf("filter-dataline|%s|%s|.\n", token, s.id)
 }
 
-func WriteMultilineHeader(s SMTPSession, token string, header string, value string ) {
+func WriteMultilineHeader(s *SMTPSession, token string, header string, value string ) {
 	for i, line := range strings.Split(value, "\n") {
 		if i == 0 {
 			fmt.Printf("filter-dataline|%s|%s|%s: %s\n",
