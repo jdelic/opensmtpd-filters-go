@@ -402,22 +402,23 @@ func (sf *SessionTrackingFilter) Commit(sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
-
-/*	token := params[0]
-	s := sf.Sessions[sessionId]
-
-	switch s.action {
-	case "reject":
-		fmt.Printf("filter-result|%s|%s|reject|550 %s\n", token, sessionId, s.response)
-	case "greylist":
-		fmt.Printf("filter-result|%s|%s|reject|421 %s\n", token, sessionId, s.response)
-	case "soft reject":
-		fmt.Printf("filter-result|%s|%s|reject|451 %s\n", token, sessionId, s.response)
-	default:
-		fmt.Printf("filter-result|%s|%s|proceed\n", token, sessionId)
-	}*/
 }
 
+func Proceed(token, sessionId string) {
+	fmt.Printf("filter-result|%s|%s|proceed\n", token, sessionId)
+}
+
+func HardReject(token, sessionId, response string) {
+	fmt.Printf("filter-result|%s|%s|reject|550 %s\n", token, sessionId, response)
+}
+
+func Greylist(token, sessionId, response string) {
+	fmt.Printf("filter-result|%s|%s|reject|421 %s\n", token, sessionId, response)
+}
+
+func SoftReject(token, sessionId, response string) {
+	fmt.Printf("filter-result|%s|%s|reject|451 %s\n", token, sessionId, response)
+}
 
 func FlushMessage(token string, session SMTPSession) {
 	for _, line := range session.message {
