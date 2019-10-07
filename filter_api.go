@@ -170,6 +170,10 @@ type DatalineFilter interface {
 	Dataline(string, []string)
 }
 
+type MessageReceivedCallback interface {
+	MessageComplete(string, *SMTPSession)
+}
+
 type CommitFilter interface {
 	Commit(string, []string)
 }
@@ -381,8 +385,13 @@ func (sf *SessionTrackingFilter) Dataline(sessionId string, params []string) {
 
 	s := sf.Sessions[sessionId]
 	if line == "." {
-		//go rspamdQuery(s, token)
-		// TODO: what do? This is where a filter needs a "message fully received" callback
+		if cb, ok := (interface {})(*sf).(MessageReceivedCallback); ok {
+			s := sf.Sessions[sessionId]
+			cb.MessageComplete(params[0], &s)
+			sf.Sessions[sessionId] = s
+		} else {
+			FlushMessage(params[0], sf.Sessions[sessionId])
+		}
 		return
 	}
 	s.message = append(s.message, line)
@@ -410,21 +419,25 @@ func (sf *SessionTrackingFilter) Commit(sessionId string, params []string) {
 }
 
 
-func FlushMessage(s *SMTPSession, token string) {
-	for _, line := range s.message {
-		fmt.Printf("filter-dataline|%s|%s|%s\n", token, s.id, line)
+func FlushMessage(token string, session SMTPSession) {
+	for _, line := range session.message {
+		fmt.Printf("filter-dataline|%s|%s|%s\n", token, session.id, line)
 	}
-	fmt.Printf("filter-dataline|%s|%s|.\n", token, s.id)
+	fmt.Printf("filter-dataline|%s|%s|.\n", token, session.id)
 }
 
-func WriteMultilineHeader(s *SMTPSession, token string, header string, value string ) {
+func DatalineReply(token, sessionId, line string) {
+	fmt.Printf("filter-dataline|%s|%s|%s\n", token, sessionId, line)
+}
+
+func WriteMultilineHeader(token, sessionId, header, value string) {
 	for i, line := range strings.Split(value, "\n") {
 		if i == 0 {
 			fmt.Printf("filter-dataline|%s|%s|%s: %s\n",
-				token, s.id, header, line)
+				token, sessionId, header, line)
 		} else {
 			fmt.Printf("filter-dataline|%s|%s|%s\n",
-				token, s.id, line)
+				token, sessionId, line)
 		}
 	}
 }
@@ -452,6 +465,7 @@ func ProcessConfig(scanner *bufio.Scanner, filter interface{}) {
 		if cr, ok := filter.(ConfigReceiver); ok {
 			cr.Config(strings.Split(line, "|"))
 		}
+
 		if line == "config|ready" {
 			return
 		}
