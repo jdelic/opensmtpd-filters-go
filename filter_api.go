@@ -1,4 +1,7 @@
 //
+// Copyright (c) 2019 Jonas Maurus <@jdelic>
+//
+// largely based on code originally developed for filter-rspamd
 // Copyright (c) 2019 Gilles Chehade <gilles@poolp.org>
 //
 // Permission to use, copy, modify, and distribute this software for any
@@ -41,50 +44,6 @@ type SMTPSession struct {
 	rcptTo []string
 	message []string
 }
-
-/*
-    { "link-connect" },
-    { "link-disconnect" },
-    { "link-greeting" },
-    { "link-identify" },
-    { "link-tls" },
-    { "link-auth" },
-
-    { "tx-reset" },
-    { "tx-begin" },
-    { "tx-mail" },
-    { "tx-rcpt" },
-    { "tx-envelope" },
-    { "tx-data" },
-    { "tx-commit" },
-    { "tx-rollback" },
-
-    { "protocol-client" },
-    { "protocol-server" },
-
-    { "filter-report" },
-    { "filter-response" },
-
-    { "timeout" },
-
-	var reporters = []string {
-		"link-connect":    linkConnect,
-		"link-disconnect": linkDisconnect,
-		"link-greeting":   linkGreeting,
-		"link-identify":   linkIdentify,
-		"link-auth":       linkAuth,
-		"tx-reset":        txReset,
-		"tx-begin":        txBegin,
-		"tx-mail":         txMail,
-		"tx-rcpt":         txRcpt,
-	}
-
-
-	var filters = map[string]func(string, []string) {
-		"data-line": dataLine,
-		"commit": dataCommit,
-	}
-*/
 
 
 type EventHandler = func(sessionId string, params[] string)
@@ -381,10 +340,11 @@ func (sf *SessionTrackingFilter) Dataline(sessionId string, params []string) {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	//token := params[0]
-	line := strings.Join(params[1:], "|")
+	line := strings.Join(params[1:], "")
 
 	s := sf.Sessions[sessionId]
 	if line == "." {
+		s.message = append(s.message, line)
 		if cb, ok := (interface {})(*sf).(MessageReceivedCallback); ok {
 			s := sf.Sessions[sessionId]
 			cb.MessageComplete(params[0], &s)
@@ -501,95 +461,3 @@ func Run(filter interface{}) {
 		}
 	}
 }
-
-/*
-func rspamdQuery(s session, token string) {
-	r := strings.NewReader(strings.Join(s.message, "\n"))
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/checkv2", *rspamdURL), r)
-	if err != nil {
-		flushMessage(s, token)
-		return
-	}
-
-	req.Header.Add("Pass", "All")
-	if !strings.HasPrefix(s.src, "unix:") {
-		if s.src[0] == '[' {
-			ip := strings.Split(strings.Split(s.src, "]")[0], "[")[1]
-			req.Header.Add("Ip", ip)
-		} else {
-			ip := strings.Split(s.src, ":")[0]
-			req.Header.Add("Ip", ip)
-		}
-	} else {
-		req.Header.Add("Ip", "127.0.0.1")
-	}
-
-	req.Header.Add("Hostname", s.rdns)
-	req.Header.Add("Helo", s.heloName)
-	req.Header.Add("MTA-Name", s.mtaName)
-	req.Header.Add("Queue-Id", s.msgid)
-	req.Header.Add("From", s.mailFrom)
-
-	if s.userName != "" {
-		req.Header.Add("User", s.userName)
-	}
-
-	for _, rcptTo := range s.rcptTo {
-		req.Header.Add("Rcpt", rcptTo)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		flushMessage(s, token)
-		return
-	}
-	defer resp.Body.Close()
-
-	rr := &rspamd{}
-	if err := json.NewDecoder(resp.Body).Decode(rr); err != nil {
-		flushMessage(s, token)
-		return
-	}
-
-	switch rr.Action {
-	case "reject":
-		fallthrough
-	case "greylist":
-		fallthrough
-	case "soft reject":
-		s.action = rr.Action
-		s.response = rr.Messages.SMTP
-		sessions[s.id] = s
-		flushMessage(s, token)
-		return
-	}
-
-	if rr.DKIMSig != "" {
-		WriteMultilineHeader(s, token, "DKIM-Signature", rr.DKIMSig)
-	}
-
-	if rr.Action == "add header" {
-		fmt.Printf("filter-dataline|%s|%s|%s: %s\n",
-			token, s.id, "X-Spam", "yes")
-		fmt.Printf("filter-dataline|%s|%s|%s: %s\n",
-			token, s.id, "X-Spam-Score",
-			fmt.Sprintf("%v / %v",
-				rr.Score, rr.RequiredScore))
-	}
-
-	inhdr := true
-	for _, line := range s.message {
-		if line == "" {
-			inhdr = false
-		}
-		if rr.Action == "rewrite subject" && inhdr && strings.HasPrefix(line, "Subject: ") {
-			fmt.Printf("filter-dataline|%s|%s|Subject: %s\n", token, s.id, rr.Subject)
-		} else {
-			fmt.Printf("filter-dataline|%s|%s|%s\n", token, s.id, line)
-		}
-	}
-	fmt.Printf("filter-dataline|%s|%s|.\n", token, s.id)
-	sessions[s.id] = s
-}
- */
