@@ -31,18 +31,18 @@ import (
 
 
 type SMTPSession struct {
-	id string
+	Id string
 
-	rdns string
-	src string
-	heloName string
-	userName string
-	mtaName string
+	Rdns string
+	Src string
+	HeloName string
+	UserName string
+	MtaName string
 
-	msgid string
-	mailFrom string
-	rcptTo []string
-	message []string
+	Msgid string
+	MailFrom string
+	RcptTo []string
+	Message []string
 }
 
 
@@ -129,16 +129,20 @@ type DatalineFilter interface {
 	Dataline(string, []string)
 }
 
-type MessageReceivedCallback interface {
-	MessageComplete(string, *SMTPSession)
-}
-
 type CommitFilter interface {
 	Commit(string, []string)
 }
 
 type ConfigReceiver interface {
 	Config([]string)
+}
+
+type MessageReceivedCallback interface {
+	MessageComplete(string, *SMTPSession)
+}
+
+type TxBeginCallback interface {
+	TxBeginCallback(string, *SMTPSession)
 }
 
 func setIfSet(themap map[string]EventHandler, handler EventHandler, key string) {
@@ -239,10 +243,10 @@ func (sf *SessionTrackingFilter) LinkConnect(sessionId string, params []string) 
 	}
 
 	s := SMTPSession{}
-	s.id = sessionId
-	s.rdns = params[0]
-	s.src = params[2]
-	sf.Sessions[s.id] = s
+	s.Id = sessionId
+	s.Rdns = params[0]
+	s.Src = params[2]
+	sf.Sessions[s.Id] = s
 }
 
 func (sf *SessionTrackingFilter) LinkDisconnect(sessionId string, params []string) {
@@ -258,8 +262,8 @@ func (sf *SessionTrackingFilter) LinkGreeting(sessionId string, params []string)
 	}
 
 	s := sf.Sessions[sessionId]
-	s.mtaName = params[0]
-	sf.Sessions[s.id] = s
+	s.MtaName = params[0]
+	sf.Sessions[s.Id] = s
 }
 
 func (sf *SessionTrackingFilter) LinkIdentify(sessionId string, params []string) {
@@ -268,8 +272,8 @@ func (sf *SessionTrackingFilter) LinkIdentify(sessionId string, params []string)
 	}
 
 	s := sf.Sessions[sessionId]
-	s.heloName = params[1]
-	sf.Sessions[s.id] = s
+	s.HeloName = params[1]
+	sf.Sessions[s.Id] = s
 }
 
 func (sf *SessionTrackingFilter) LinkAuth(sessionId string, params []string) {
@@ -280,8 +284,8 @@ func (sf *SessionTrackingFilter) LinkAuth(sessionId string, params []string) {
 		return
 	}
 	s := sf.Sessions[sessionId]
-	s.userName = params[0]
-	sf.Sessions[s.id] = s
+	s.UserName = params[0]
+	sf.Sessions[s.Id] = s
 }
 
 func (sf *SessionTrackingFilter) TxReset(sessionId string, params []string) {
@@ -290,11 +294,11 @@ func (sf *SessionTrackingFilter) TxReset(sessionId string, params []string) {
 	}
 
 	s := sf.Sessions[sessionId]
-	s.msgid = ""
-	s.mailFrom = ""
-	s.rcptTo = nil
-	s.message = nil
-	sf.Sessions[s.id] = s
+	s.Msgid = ""
+	s.MailFrom = ""
+	s.RcptTo = nil
+	s.Message = nil
+	sf.Sessions[s.Id] = s
 }
 
 func (sf *SessionTrackingFilter) TxBegin(sessionId string, params []string) {
@@ -303,8 +307,12 @@ func (sf *SessionTrackingFilter) TxBegin(sessionId string, params []string) {
 	}
 
 	s := sf.Sessions[sessionId]
-	s.msgid = params[0]
-	sf.Sessions[s.id] = s
+	s.Msgid = params[0]
+	sf.Sessions[s.Id] = s
+
+	if cb, ok := (interface {})(*sf).(TxBeginCallback); ok {
+		cb.TxBeginCallback(params[0], &s)
+	}
 }
 
 func (sf *SessionTrackingFilter) TxMail(sessionId string, params []string) {
@@ -317,8 +325,8 @@ func (sf *SessionTrackingFilter) TxMail(sessionId string, params []string) {
 	}
 
 	s := sf.Sessions[sessionId]
-	s.mailFrom = params[1]
-	sf.Sessions[s.id] = s
+	s.MailFrom = params[1]
+	sf.Sessions[s.Id] = s
 }
 
 func (sf *SessionTrackingFilter) TxRcpt(sessionId string, params []string) {
@@ -331,8 +339,8 @@ func (sf *SessionTrackingFilter) TxRcpt(sessionId string, params []string) {
 	}
 
 	s := sf.Sessions[sessionId]
-	s.rcptTo = append(s.rcptTo, params[1])
-	sf.Sessions[s.id] = s
+	s.RcptTo = append(s.RcptTo, params[1])
+	sf.Sessions[s.Id] = s
 }
 
 func (sf *SessionTrackingFilter) Dataline(sessionId string, params []string) {
@@ -344,7 +352,7 @@ func (sf *SessionTrackingFilter) Dataline(sessionId string, params []string) {
 
 	s := sf.Sessions[sessionId]
 	if line == "." {
-		s.message = append(s.message, line)
+		s.Message = append(s.Message, line)
 		if cb, ok := (interface {})(*sf).(MessageReceivedCallback); ok {
 			s := sf.Sessions[sessionId]
 			cb.MessageComplete(params[0], &s)
@@ -354,7 +362,7 @@ func (sf *SessionTrackingFilter) Dataline(sessionId string, params []string) {
 		}
 		return
 	}
-	s.message = append(s.message, line)
+	s.Message = append(s.Message, line)
 	sf.Sessions[sessionId] = s
 }
 
@@ -381,10 +389,10 @@ func SoftReject(token, sessionId, response string) {
 }
 
 func FlushMessage(token string, session SMTPSession) {
-	for _, line := range session.message {
-		fmt.Printf("filter-dataline|%s|%s|%s\n", token, session.id, line)
+	for _, line := range session.Message {
+		fmt.Printf("filter-dataline|%s|%s|%s\n", token, session.Id, line)
 	}
-	fmt.Printf("filter-dataline|%s|%s|.\n", token, session.id)
+	fmt.Printf("filter-dataline|%s|%s|.\n", token, session.Id)
 }
 
 func DatalineReply(token, sessionId, line string) {
