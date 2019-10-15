@@ -413,6 +413,7 @@ func Dispatch(mapping FilterDispatchMap, atoms []string) {
 		}
 	}
 	if !found {
+		log.Printf("Received event for unregistered handler %s", atoms[4])
 		os.Exit(1)
 	}
 }
@@ -441,11 +442,13 @@ func Run(filter interface{}) {
 
 	for {
 		if !scanner.Scan() {
+			log.Printf("Scanner closed")
 			os.Exit(0)
 		}
 
 		atoms := strings.Split(scanner.Text(), "|")
 		if len(atoms) < 6 {
+			log.Printf("Less than 6 atoms")
 			os.Exit(1)
 		}
 
@@ -457,6 +460,7 @@ func Run(filter interface{}) {
 		case "filter":
 			Dispatch(filters, atoms)
 		default:
+			log.Printf("No matching handler type %s", atoms[0])
 			os.Exit(1)
 		}
 	}
