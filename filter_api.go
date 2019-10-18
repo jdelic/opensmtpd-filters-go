@@ -46,91 +46,88 @@ type SMTPSession struct {
 }
 
 
-type EventHandler = func(sessionId string, params[] string)
-type FilterDispatchMap = map[string]EventHandler
-
 type LinkConnectFilter interface {
-	LinkConnect(string, []string)
+	LinkConnect(string, SessionHolder, string, []string)
 }
 
 type LinkDisconnectFilter interface {
-	LinkDisconnect(string, []string)
+	LinkDisconnect(string, SessionHolder, string, []string)
 }
 
 type LinkGreetingFilter interface {
-	LinkGreeting(string, []string)
+	LinkGreeting(string, SessionHolder, string, []string)
 }
 
 type LinkIdentifyFilter interface {
-	LinkIdentity(string, []string)
+	LinkIdentity(string, SessionHolder, string, []string)
 }
 
 type LinkTLSFilter interface {
-	LinkTLS(string, []string)
+	LinkTLS(string, SessionHolder, string, []string)
 }
 
 type LinkAuthFilter interface {
-	LinkAuth(string, []string)
+	LinkAuth(string, SessionHolder, string, []string)
 }
 
 type TxResetFilter interface {
-	TxReset(string, []string)
+	TxReset(string, SessionHolder, string, []string)
 }
 
 type TxBeginFilter interface {
-	TxBegin(string, []string)
+	TxBegin(string, SessionHolder, string, []string)
 }
 
 type TxMailFilter interface {
-	TxMail(string, []string)
+	TxMail(string, SessionHolder, string, []string)
 }
 
 type TxRcptFilter interface {
-	TxRcpt(string, []string)
+	TxRcpt(string, SessionHolder, string, []string)
 }
 
 type TxEnvelopeFilter interface {
-	TxEnvelope(string, []string)
+	TxEnvelope(string, SessionHolder, string, []string)
 }
 
 type TxDataFilter interface {
-	TxData(string, []string)
+	TxData(string, SessionHolder, string, []string)
 }
 
 type TxCommitFilter interface {
-	TxCommit(string, []string)
+	TxCommit(string, SessionHolder, string, []string)
 }
 
 type TxRollbackFilter interface {
-	TxRollback(string, []string)
+	TxRollback(string, SessionHolder, string, []string)
 }
 
 type ProtocolClientFilter interface {
-	ProtocolClient(string, []string)
+	ProtocolClient(string, SessionHolder, string, []string)
 }
 
 type ProtocolServerFilter interface {
-	ProtocolServer(string, []string)
+	ProtocolServer(string, SessionHolder, string, []string)
 }
 
 type FilterReportFilter interface {
-	FilterReport(string, []string)
+	FilterReport(string, SessionHolder, string, []string)
 }
 
 type FilterResponseFilter interface {
-	FilterResponse(string, []string)
+	FilterResponse(string, SessionHolder, string, []string)
 }
 
 type TimeoutFilter interface {
-	Timeout(string, []string)
+	Timeout(string, SessionHolder, string, []string)
 }
 
 type DatalineFilter interface {
-	Dataline(string, []string)
+	Dataline(string, SessionHolder, string, []string)
 }
 
 type CommitFilter interface {
-	Commit(string, []string)
+	Commit(string, SessionHolder, string, []string)
 }
 
 type ConfigReceiver interface {
@@ -145,177 +142,276 @@ type TxBeginCallback interface {
 	TxBeginCallback(string, *SMTPSession)
 }
 
-func setIfSet(themap map[string]EventHandler, handler EventHandler, key string) {
-	if handler != nil {
-		themap[key] = handler
-	}
+type Filter interface {
+	GetCapabilities() FilterDispatchMap
+	Register()
+	Dispatch([]string)
 }
 
-func GetMapping(filter interface{}) (FilterDispatchMap, FilterDispatchMap) {
-	reporters := make(map[string]EventHandler)
-	if f, ok := filter.(LinkConnectFilter); ok {
-		setIfSet(reporters, f.LinkConnect, "link-connect")
-	}
-	if f, ok := filter.(LinkDisconnectFilter); ok {
-		setIfSet(reporters, f.LinkDisconnect, "link-disconnect")
-	}
-	if f, ok := filter.(LinkGreetingFilter); ok {
-		setIfSet(reporters, f.LinkGreeting, "link-greeting")
-	}
-	if f, ok := filter.(LinkIdentifyFilter); ok {
-		setIfSet(reporters, f.LinkIdentity, "link-identify")
-	}
-	if f, ok := filter.(LinkTLSFilter); ok {
-		setIfSet(reporters, f.LinkTLS, "link-tls")
-	}
-	if f, ok := filter.(LinkAuthFilter); ok {
-		setIfSet(reporters, f.LinkAuth, "link-auth")
-	}
-	if f, ok := filter.(TxResetFilter); ok {
-		setIfSet(reporters, f.TxReset, "tx-reset")
-	}
-	if f, ok := filter.(TxBeginFilter); ok {
-		setIfSet(reporters, f.TxBegin, "tx-begin")
-	}
-	if f, ok := filter.(TxMailFilter); ok {
-		setIfSet(reporters, f.TxMail, "tx-mail")
-	}
-	if f, ok := filter.(TxRcptFilter); ok {
-		setIfSet(reporters, f.TxRcpt, "tx-rcpt")
-	}
-	if f, ok := filter.(TxEnvelopeFilter); ok {
-		setIfSet(reporters, f.TxEnvelope, "tx-envelope")
-	}
-	if f, ok := filter.(TxDataFilter); ok {
-		setIfSet(reporters, f.TxData, "tx-data")
-	}
-	if f, ok := filter.(TxCommitFilter); ok {
-		setIfSet(reporters, f.TxCommit, "tx-commit")
-	}
-	if f, ok := filter.(TxRollbackFilter); ok {
-		setIfSet(reporters, f.TxRollback, "tx-rollback")
-	}
-	if f, ok := filter.(ProtocolClientFilter); ok {
-		setIfSet(reporters, f.ProtocolClient, "protocol-client")
-	}
-	if f, ok := filter.(ProtocolServerFilter); ok {
-		setIfSet(reporters, f.ProtocolServer, "protocol-server")
-	}
-	if f, ok := filter.(TimeoutFilter); ok {
-		setIfSet(reporters, f.Timeout, "timeout")
-	}
-
-	filters := make(map[string]EventHandler)
-	if f, ok := filter.(DatalineFilter); ok {
-		setIfSet(filters, f.Dataline, "data-line")
-	}
-	if f, ok := filter.(CommitFilter); ok {
-		setIfSet(filters, f.Commit, "commit")
-	}
-	if f, ok := filter.(FilterResponseFilter); ok {
-		setIfSet(filters, f.FilterResponse, "filter-response")
-	}
-	if f, ok := filter.(FilterReportFilter); ok {
-		setIfSet(filters, f.FilterReport, "filter-report")
-	}
-
-	return reporters, filters
+type FilterDef struct {
+	Sessions map[string]*SMTPSession
 }
 
-func Register(filter interface{}) {
-	reporters, filters := GetMapping(filter)
-	for k := range reporters {
-		fmt.Printf("register|report|smtp-in|%s\n", k)
+type EventHandler = func(FilterDef, string, SessionHolder, string, []string)
+
+type FilterDispatchMap = map[string]map[string]EventHandler
+
+func (fdef *FilterDef) GetCapabilities() FilterDispatchMap {
+	capabilities := make(FilterDispatchMap)
+
+	capabilities["report"] = make(map[string]EventHandler)
+	reporters := capabilities["report"]
+	if _, ok := (interface{})(fdef).(LinkConnectFilter); ok {
+		reporters["link-connect"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(LinkConnectFilter).LinkConnect(verb, sh, sessionId, params)
+			}
 	}
-	for k := range filters {
-		fmt.Printf("register|filter|smtp-in|%s\n", k)
+	if _, ok := fdef.Filter.(LinkDisconnectFilter); ok {
+		reporters["link-disconnect"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(LinkDisconnectFilter).LinkDisconnect(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(LinkGreetingFilter); ok {
+		reporters["link-greeting"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(LinkGreetingFilter).LinkGreeting(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(LinkIdentifyFilter); ok {
+		reporters["link-identify"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(LinkIdentifyFilter).LinkIdentity(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(LinkTLSFilter); ok {
+		reporters["link-tls"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(LinkTLSFilter).LinkTLS(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(LinkAuthFilter); ok {
+		reporters["link-auth"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(LinkAuthFilter).LinkAuth(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TxResetFilter); ok {
+		reporters["tx-reset"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(TxResetFilter).TxReset(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TxBeginFilter); ok {
+		reporters["tx-begin"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(TxBeginFilter).TxBegin(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TxMailFilter); ok {
+		reporters["tx-mail"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(TxMailFilter).TxMail(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TxRcptFilter); ok {
+		reporters["tx-rcpt"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(TxRcptFilter).TxRcpt(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TxEnvelopeFilter); ok {
+		reporters["tx-envelope"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(TxEnvelopeFilter).TxEnvelope(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TxDataFilter); ok {
+		reporters["tx-data"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(TxDataFilter).TxData(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TxCommitFilter); ok {
+		reporters["tx-commit"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(TxCommitFilter).TxCommit(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TxRollbackFilter); ok {
+		reporters["link-connect"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(LinkConnectFilter).LinkConnect(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(ProtocolClientFilter); ok {
+		reporters["protocol-client"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(ProtocolClientFilter).ProtocolClient(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(ProtocolServerFilter); ok {
+		reporters["protocol-server"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(ProtocolServerFilter).ProtocolServer(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(TimeoutFilter); ok {
+		reporters["timeout"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(TimeoutFilter).Timeout(verb, sh, sessionId, params)
+			}
+	}
+	capabilities["report"] = reporters
+
+	capabilities["filter"] = make(map[string]EventHandler)
+	filters := capabilities["filter"]
+	if _, ok := fdef.Filter.(DatalineFilter); ok {
+		filters["data-line"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(DatalineFilter).Dataline(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(CommitFilter); ok {
+		filters["commit"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(CommitFilter).Commit(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(FilterResponseFilter); ok {
+		filters["filter-response"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(FilterResponseFilter).FilterResponse(verb, sh, sessionId, params)
+			}
+	}
+	if _, ok := fdef.Filter.(FilterReportFilter); ok {
+		filters["filter-report"] =
+			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.Filter.(FilterReportFilter).FilterReport(verb, sh, sessionId, params)
+			}
+	}
+	capabilities["filter"] = filters
+
+	log.Printf("%v", capabilities)
+
+	return capabilities
+}
+
+func (fdef *FilterDef) Register() {
+	capabilities := fdef.GetCapabilities()
+	for typ := range capabilities {
+		log.Printf("enumerating type %v", typ)
+		for op := range capabilities[typ] {
+			fmt.Printf("register|%v|smtp-in|%v\n", typ, op)
+		}
 	}
 	fmt.Println("register|ready")
 }
 
-type SessionTrackingFilter struct {
-	Sessions map[string]SMTPSession
+type SessionHolder interface {
+	GetSessions() map[string]*SMTPSession
+	GetSession(string) *SMTPSession
+	SetSession(*SMTPSession)
 }
 
-func (sf *SessionTrackingFilter) LinkConnect(sessionId string, params []string) {
+
+func (fdef *FilterDef) GetSessions() map[string]*SMTPSession {
+	return fdef.Sessions
+}
+
+func (fdef *FilterDef) GetSession(sessionId string) *SMTPSession {
+	return fdef.Sessions[sessionId]
+}
+
+func (fdef *FilterDef) SetSession(session *SMTPSession) {
+	fdef.Sessions[session.Id] = session
+}
+
+type SessionTrackingMixin struct {}
+
+func (sf *SessionTrackingMixin) LinkConnect(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 4 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
+
+	log.Printf("LinkConnect sf:%v sh:%v", sf, sh)
 
 	s := SMTPSession{}
 	s.Id = sessionId
 	s.Rdns = params[0]
 	s.Src = params[2]
-	sf.Sessions[s.Id] = s
+
+	sh.SetSession(&s)
 }
 
-func (sf *SessionTrackingFilter) LinkDisconnect(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkDisconnect(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 0 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
-	delete(sf.Sessions, sessionId)
+	delete(sh.GetSessions(), sessionId)
 }
 
-func (sf *SessionTrackingFilter) LinkGreeting(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkGreeting(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	s := sf.Sessions[sessionId]
+	s := sh.GetSession(sessionId)
 	s.MtaName = params[0]
-	sf.Sessions[s.Id] = s
+	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingFilter) LinkIdentify(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkIdentify(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	s := sf.Sessions[sessionId]
+	s := sh.GetSession(sessionId)
 	s.HeloName = params[1]
-	sf.Sessions[s.Id] = s
+	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingFilter) LinkAuth(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkAuth(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	if params[1] != "pass" {
 		return
 	}
-	s := sf.Sessions[sessionId]
+	s := sh.GetSession(sessionId)
 	s.UserName = params[0]
-	sf.Sessions[s.Id] = s
+	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingFilter) TxReset(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxReset(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	s := sf.Sessions[sessionId]
+	s := sh.GetSession(sessionId)
 	s.Msgid = ""
 	s.MailFrom = ""
 	s.RcptTo = nil
 	s.Message = nil
-	sf.Sessions[s.Id] = s
+	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingFilter) TxBegin(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxBegin(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	s := sf.Sessions[sessionId]
+	s := sh.GetSession(sessionId)
 	s.Msgid = params[0]
-	sf.Sessions[s.Id] = s
+	sh.SetSession(s)
 
 	if cb, ok := (interface {})(*sf).(TxBeginCallback); ok {
-		cb.TxBeginCallback(params[0], &s)
+		cb.TxBeginCallback(params[0], s)
 	}
 }
 
-func (sf *SessionTrackingFilter) TxMail(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxMail(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -324,12 +420,12 @@ func (sf *SessionTrackingFilter) TxMail(sessionId string, params []string) {
 		return
 	}
 
-	s := sf.Sessions[sessionId]
+	s := sh.GetSession(sessionId)
 	s.MailFrom = params[1]
-	sf.Sessions[s.Id] = s
+	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingFilter) TxRcpt(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxRcpt(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -338,35 +434,35 @@ func (sf *SessionTrackingFilter) TxRcpt(sessionId string, params []string) {
 		return
 	}
 
-	s := sf.Sessions[sessionId]
+	s := sh.GetSession(sessionId)
 	s.RcptTo = append(s.RcptTo, params[1])
-	sf.Sessions[s.Id] = s
+	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingFilter) Dataline(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) Dataline(sh SessionHolder, sessionId string, params []string) {
 	if len(params) < 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	//token := params[0]
 	line := strings.Join(params[1:], "")
 
-	s := sf.Sessions[sessionId]
+	s := sh.GetSession(sessionId)
 	if line == "." {
 		s.Message = append(s.Message, line)
 		if cb, ok := (interface {})(*sf).(MessageReceivedCallback); ok {
-			s := sf.Sessions[sessionId]
-			cb.MessageComplete(params[0], &s)
-			sf.Sessions[sessionId] = s
+			s := sh.GetSession(sessionId)
+			cb.MessageComplete(params[0], s)
+			sh.SetSession(s)
 		} else {
-			FlushMessage(params[0], sf.Sessions[sessionId])
+			FlushMessage(params[0], sh.GetSession(sessionId))
 		}
 		return
 	}
 	s.Message = append(s.Message, line)
-	sf.Sessions[sessionId] = s
+	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingFilter) Commit(sessionId string, params []string) {
+func (sf *SessionTrackingMixin) Commit(sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -388,7 +484,7 @@ func SoftReject(token, sessionId, response string) {
 	fmt.Printf("filter-result|%s|%s|reject|451 %s\n", token, sessionId, response)
 }
 
-func FlushMessage(token string, session SMTPSession) {
+func FlushMessage(token string, session *SMTPSession) {
 	for _, line := range session.Message {
 		fmt.Printf("filter-dataline|%s|%s|%s\n", token, session.Id, line)
 	}
@@ -411,28 +507,22 @@ func WriteMultilineHeader(token, sessionId, header, value string) {
 	}
 }
 
-func Dispatch(mapping FilterDispatchMap, atoms []string) {
-	found := false
-	for action, handler := range mapping {
-		if action == atoms[4] {
-			handler(atoms[5], atoms[6:])
-			found = true
-			break
-		}
-	}
-	if !found {
-		log.Printf("Received event for unregistered handler %s", atoms[4])
-		os.Exit(1)
+func (fdef *FilterDef) Dispatch(atoms []string) {
+	var sh SessionHolder = fdef
+
+	fcap := fdef.GetCapabilities()
+	if handler, err := fcap[atoms[0]][atoms[4]]; !err {
+		handler(*fdef, atoms[4], sh, atoms[5], atoms[6:])
 	}
 }
 
-func ProcessConfig(scanner *bufio.Scanner, filter interface{}) {
+func (fdef *FilterDef) ProcessConfig(scanner *bufio.Scanner) {
 	for {
 		if !scanner.Scan() {
 			os.Exit(0)
 		}
 		line := scanner.Text()
-		if cr, ok := filter.(ConfigReceiver); ok {
+		if cr, ok := fdef.Filter.(ConfigReceiver); ok {
 			cr.Config(strings.Split(line, "|"))
 		}
 
@@ -442,11 +532,16 @@ func ProcessConfig(scanner *bufio.Scanner, filter interface{}) {
 	}
 }
 
-func Run(filter interface{}) {
-	scanner := bufio.NewScanner(os.Stdin)
-	ProcessConfig(scanner, filter)
 
-	Register(filter)
+func (fdef *FilterDef) Run() {
+	scanner := bufio.NewScanner(os.Stdin)
+
+	if fdef.Sessions == nil {
+		fdef.Sessions = make(map[string]*SMTPSession)
+	}
+
+	fdef.ProcessConfig(scanner)
+	fdef.Register()
 
 	for {
 		if !scanner.Scan() {
@@ -460,16 +555,6 @@ func Run(filter interface{}) {
 			os.Exit(1)
 		}
 
-		reporters, filters := GetMapping(filter)
-
-		switch atoms[0] {
-		case "report":
-			Dispatch(reporters, atoms)
-		case "filter":
-			Dispatch(filters, atoms)
-		default:
-			log.Printf("No matching handler type %s", atoms[0])
-			os.Exit(1)
-		}
+		fdef.Dispatch(atoms)
 	}
 }
