@@ -146,162 +146,155 @@ type Filter interface {
 	GetCapabilities() FilterDispatchMap
 	Register()
 	Dispatch([]string)
+	ProcessConfig(*bufio.Scanner)
 }
 
-type FilterDef struct {
-	Sessions map[string]*SMTPSession
-}
-
-type EventHandler = func(FilterDef, string, SessionHolder, string, []string)
+type EventHandler = func(Filter, string, SessionHolder, string, []string)
 
 type FilterDispatchMap = map[string]map[string]EventHandler
 
-func (fdef *FilterDef) GetCapabilities() FilterDispatchMap {
+func GetCapabilities(fdef Filter) FilterDispatchMap {
 	capabilities := make(FilterDispatchMap)
 
 	capabilities["report"] = make(map[string]EventHandler)
 	reporters := capabilities["report"]
-	if _, ok := (interface{})(fdef).(LinkConnectFilter); ok {
+	if _, ok := fdef.(LinkConnectFilter); ok {
 		reporters["link-connect"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(LinkConnectFilter).LinkConnect(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(LinkConnectFilter).LinkConnect(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(LinkDisconnectFilter); ok {
+	if _, ok := fdef.(LinkDisconnectFilter); ok {
 		reporters["link-disconnect"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(LinkDisconnectFilter).LinkDisconnect(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(LinkDisconnectFilter).LinkDisconnect(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(LinkGreetingFilter); ok {
+	if _, ok := fdef.(LinkGreetingFilter); ok {
 		reporters["link-greeting"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(LinkGreetingFilter).LinkGreeting(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(LinkGreetingFilter).LinkGreeting(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(LinkIdentifyFilter); ok {
+	if _, ok := fdef.(LinkIdentifyFilter); ok {
 		reporters["link-identify"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(LinkIdentifyFilter).LinkIdentity(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(LinkIdentifyFilter).LinkIdentity(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(LinkTLSFilter); ok {
+	if _, ok := fdef.(LinkTLSFilter); ok {
 		reporters["link-tls"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(LinkTLSFilter).LinkTLS(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(LinkTLSFilter).LinkTLS(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(LinkAuthFilter); ok {
+	if _, ok := fdef.(LinkAuthFilter); ok {
 		reporters["link-auth"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(LinkAuthFilter).LinkAuth(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(LinkAuthFilter).LinkAuth(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TxResetFilter); ok {
+	if _, ok := fdef.(TxResetFilter); ok {
 		reporters["tx-reset"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(TxResetFilter).TxReset(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(TxResetFilter).TxReset(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TxBeginFilter); ok {
+	if _, ok := fdef.(TxBeginFilter); ok {
 		reporters["tx-begin"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(TxBeginFilter).TxBegin(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(TxBeginFilter).TxBegin(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TxMailFilter); ok {
+	if _, ok := fdef.(TxMailFilter); ok {
 		reporters["tx-mail"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(TxMailFilter).TxMail(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(TxMailFilter).TxMail(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TxRcptFilter); ok {
+	if _, ok := fdef.(TxRcptFilter); ok {
 		reporters["tx-rcpt"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(TxRcptFilter).TxRcpt(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(TxRcptFilter).TxRcpt(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TxEnvelopeFilter); ok {
+	if _, ok := fdef.(TxEnvelopeFilter); ok {
 		reporters["tx-envelope"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(TxEnvelopeFilter).TxEnvelope(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(TxEnvelopeFilter).TxEnvelope(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TxDataFilter); ok {
+	if _, ok := fdef.(TxDataFilter); ok {
 		reporters["tx-data"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(TxDataFilter).TxData(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(TxDataFilter).TxData(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TxCommitFilter); ok {
+	if _, ok := fdef.(TxCommitFilter); ok {
 		reporters["tx-commit"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(TxCommitFilter).TxCommit(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(TxCommitFilter).TxCommit(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TxRollbackFilter); ok {
+	if _, ok := fdef.(TxRollbackFilter); ok {
 		reporters["link-connect"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(LinkConnectFilter).LinkConnect(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(LinkConnectFilter).LinkConnect(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(ProtocolClientFilter); ok {
+	if _, ok := fdef.(ProtocolClientFilter); ok {
 		reporters["protocol-client"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(ProtocolClientFilter).ProtocolClient(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(ProtocolClientFilter).ProtocolClient(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(ProtocolServerFilter); ok {
+	if _, ok := fdef.(ProtocolServerFilter); ok {
 		reporters["protocol-server"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(ProtocolServerFilter).ProtocolServer(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(ProtocolServerFilter).ProtocolServer(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(TimeoutFilter); ok {
+	if _, ok := fdef.(TimeoutFilter); ok {
 		reporters["timeout"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(TimeoutFilter).Timeout(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(TimeoutFilter).Timeout(verb, sh, sessionId, params)
 			}
 	}
 	capabilities["report"] = reporters
 
 	capabilities["filter"] = make(map[string]EventHandler)
 	filters := capabilities["filter"]
-	if _, ok := fdef.Filter.(DatalineFilter); ok {
+	if _, ok := fdef.(DatalineFilter); ok {
 		filters["data-line"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(DatalineFilter).Dataline(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(DatalineFilter).Dataline(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(CommitFilter); ok {
+	if _, ok := fdef.(CommitFilter); ok {
 		filters["commit"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(CommitFilter).Commit(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(CommitFilter).Commit(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(FilterResponseFilter); ok {
+	if _, ok := fdef.(FilterResponseFilter); ok {
 		filters["filter-response"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(FilterResponseFilter).FilterResponse(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(FilterResponseFilter).FilterResponse(verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fdef.Filter.(FilterReportFilter); ok {
+	if _, ok := fdef.(FilterReportFilter); ok {
 		filters["filter-report"] =
-			func(fd FilterDef, verb string, sh SessionHolder, sessionId string, params []string) {
-				fd.Filter.(FilterReportFilter).FilterReport(verb, sh, sessionId, params)
+			func(fd Filter, verb string, sh SessionHolder, sessionId string, params []string) {
+				fd.(FilterReportFilter).FilterReport(verb, sh, sessionId, params)
 			}
 	}
 	capabilities["filter"] = filters
-
-	log.Printf("%v", capabilities)
-
 	return capabilities
 }
 
-func (fdef *FilterDef) Register() {
+func Register(fdef Filter) {
 	capabilities := fdef.GetCapabilities()
 	for typ := range capabilities {
-		log.Printf("enumerating type %v", typ)
 		for op := range capabilities[typ] {
 			fmt.Printf("register|%v|smtp-in|%v\n", typ, op)
 		}
@@ -315,27 +308,36 @@ type SessionHolder interface {
 	SetSession(*SMTPSession)
 }
 
-
-func (fdef *FilterDef) GetSessions() map[string]*SMTPSession {
-	return fdef.Sessions
+type SessionHolderImpl struct {
+	Sessions map[string]*SMTPSession
 }
 
-func (fdef *FilterDef) GetSession(sessionId string) *SMTPSession {
-	return fdef.Sessions[sessionId]
+func (shi *SessionHolderImpl) GetSessions() map[string]*SMTPSession {
+	return shi.Sessions
 }
 
-func (fdef *FilterDef) SetSession(session *SMTPSession) {
-	fdef.Sessions[session.Id] = session
+func (shi *SessionHolderImpl) GetSession(sessionId string) *SMTPSession {
+	if shi.Sessions == nil {
+		return nil
+	}
+	return shi.Sessions[sessionId]
 }
 
-type SessionTrackingMixin struct {}
+func (shi *SessionHolderImpl) SetSession(session *SMTPSession) {
+	if shi.Sessions == nil {
+		shi.Sessions = make(map[string]*SMTPSession)
+	}
+	shi.Sessions[session.Id] = session
+}
 
-func (sf *SessionTrackingMixin) LinkConnect(sh SessionHolder, sessionId string, params []string) {
+type SessionTrackingMixin struct {
+	SessionHolderImpl
+}
+
+func (sf *SessionTrackingMixin) LinkConnect(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 4 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
-
-	log.Printf("LinkConnect sf:%v sh:%v", sf, sh)
 
 	s := SMTPSession{}
 	s.Id = sessionId
@@ -345,14 +347,14 @@ func (sf *SessionTrackingMixin) LinkConnect(sh SessionHolder, sessionId string, 
 	sh.SetSession(&s)
 }
 
-func (sf *SessionTrackingMixin) LinkDisconnect(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkDisconnect(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 0 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	delete(sh.GetSessions(), sessionId)
 }
 
-func (sf *SessionTrackingMixin) LinkGreeting(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkGreeting(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -362,7 +364,7 @@ func (sf *SessionTrackingMixin) LinkGreeting(sh SessionHolder, sessionId string,
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) LinkIdentify(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkIdentify(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -372,7 +374,7 @@ func (sf *SessionTrackingMixin) LinkIdentify(sh SessionHolder, sessionId string,
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) LinkAuth(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkAuth(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -384,7 +386,7 @@ func (sf *SessionTrackingMixin) LinkAuth(sh SessionHolder, sessionId string, par
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxReset(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxReset(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -397,7 +399,7 @@ func (sf *SessionTrackingMixin) TxReset(sh SessionHolder, sessionId string, para
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxBegin(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxBegin(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -411,7 +413,7 @@ func (sf *SessionTrackingMixin) TxBegin(sh SessionHolder, sessionId string, para
 	}
 }
 
-func (sf *SessionTrackingMixin) TxMail(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxMail(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -425,7 +427,7 @@ func (sf *SessionTrackingMixin) TxMail(sh SessionHolder, sessionId string, param
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxRcpt(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxRcpt(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -439,7 +441,7 @@ func (sf *SessionTrackingMixin) TxRcpt(sh SessionHolder, sessionId string, param
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) Dataline(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) Dataline(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) < 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -462,7 +464,7 @@ func (sf *SessionTrackingMixin) Dataline(sh SessionHolder, sessionId string, par
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) Commit(sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) Commit(verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -507,22 +509,27 @@ func WriteMultilineHeader(token, sessionId, header, value string) {
 	}
 }
 
-func (fdef *FilterDef) Dispatch(atoms []string) {
-	var sh SessionHolder = fdef
+func Dispatch(fdef Filter, atoms []string) {
+	var sh SessionHolder
+	var ok bool
+	if sh, ok = fdef.(SessionHolder); !ok {
+		sh = nil
+	}
 
 	fcap := fdef.GetCapabilities()
-	if handler, err := fcap[atoms[0]][atoms[4]]; !err {
-		handler(*fdef, atoms[4], sh, atoms[5], atoms[6:])
+	log.Printf("type: %v op: %v", atoms[0], atoms[4])
+	if handler, ok := fcap[atoms[0]][atoms[4]]; ok {
+		handler(fdef, atoms[4], sh, atoms[5], atoms[6:])
 	}
 }
 
-func (fdef *FilterDef) ProcessConfig(scanner *bufio.Scanner) {
+func ProcessConfig(fdef Filter, scanner *bufio.Scanner) {
 	for {
 		if !scanner.Scan() {
 			os.Exit(0)
 		}
 		line := scanner.Text()
-		if cr, ok := fdef.Filter.(ConfigReceiver); ok {
+		if cr, ok := fdef.(ConfigReceiver); ok {
 			cr.Config(strings.Split(line, "|"))
 		}
 
@@ -533,12 +540,8 @@ func (fdef *FilterDef) ProcessConfig(scanner *bufio.Scanner) {
 }
 
 
-func (fdef *FilterDef) Run() {
+func Run(fdef Filter) {
 	scanner := bufio.NewScanner(os.Stdin)
-
-	if fdef.Sessions == nil {
-		fdef.Sessions = make(map[string]*SMTPSession)
-	}
 
 	fdef.ProcessConfig(scanner)
 	fdef.Register()
