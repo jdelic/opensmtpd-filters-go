@@ -37,7 +37,7 @@ type SessionTrackingMixin struct {
 	SessionHolderImpl
 }
 
-func (sf *SessionTrackingMixin) LinkConnect(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkConnect(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 4 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -50,14 +50,14 @@ func (sf *SessionTrackingMixin) LinkConnect(verb string, sh SessionHolder, sessi
 	sh.SetSession(&s)
 }
 
-func (sf *SessionTrackingMixin) LinkDisconnect(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkDisconnect(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 0 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	delete(sh.GetSessions(), sessionId)
 }
 
-func (sf *SessionTrackingMixin) LinkGreeting(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkGreeting(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -67,7 +67,7 @@ func (sf *SessionTrackingMixin) LinkGreeting(verb string, sh SessionHolder, sess
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) LinkIdentify(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkIdentify(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -77,7 +77,7 @@ func (sf *SessionTrackingMixin) LinkIdentify(verb string, sh SessionHolder, sess
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) LinkAuth(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkAuth(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -89,7 +89,7 @@ func (sf *SessionTrackingMixin) LinkAuth(verb string, sh SessionHolder, sessionI
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxReset(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxReset(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -102,7 +102,7 @@ func (sf *SessionTrackingMixin) TxReset(verb string, sh SessionHolder, sessionId
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxBegin(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxBegin(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -112,7 +112,7 @@ func (sf *SessionTrackingMixin) TxBegin(verb string, sh SessionHolder, sessionId
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxMail(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxMail(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -126,7 +126,7 @@ func (sf *SessionTrackingMixin) TxMail(verb string, sh SessionHolder, sessionId 
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxRcpt(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxRcpt(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -140,7 +140,7 @@ func (sf *SessionTrackingMixin) TxRcpt(verb string, sh SessionHolder, sessionId 
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) Dataline(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) < 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -163,7 +163,7 @@ func (sf *SessionTrackingMixin) Dataline(verb string, sh SessionHolder, sessionI
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) Commit(verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) Commit(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
