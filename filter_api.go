@@ -70,225 +70,225 @@ type FilterWrapperImpl struct {
 	Filter interface{}
 }
 
-func (fw *FilterWrapperImpl) GetFilter() interface{} {
-	return fw.Filter
+func (fwi *FilterWrapperImpl) GetFilter() interface{} {
+	return fwi.Filter
 }
 
-type EventHandler = func(string, SessionHolder, string, []string)
+type EventHandler = func(FilterWrapper, string, SessionHolder, string, []string)
 
 type FilterDispatchMap = map[string]map[string]EventHandler
 
-func (fw *FilterWrapperImpl) GetCapabilities() FilterDispatchMap {
+func (fwi *FilterWrapperImpl) GetCapabilities() FilterDispatchMap {
 	capabilities := make(FilterDispatchMap)
 
 	capabilities["report"] = make(map[string]EventHandler)
 	reportReceivers := capabilities["report"]
-	if _, ok := fw.Filter.(LinkConnectReceiver); ok {
+	if _, ok := fwi.Filter.(LinkConnectReceiver); ok {
 		reportReceivers["link-connect"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(LinkConnectReceiver).LinkConnect(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(LinkConnectReceiver).LinkConnect(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(LinkDisconnectReceiver); ok {
+	if _, ok := fwi.Filter.(LinkDisconnectReceiver); ok {
 		reportReceivers["link-disconnect"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(LinkDisconnectReceiver).LinkDisconnect(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(LinkDisconnectReceiver).LinkDisconnect(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(LinkGreetingReceiver); ok {
+	if _, ok := fwi.Filter.(LinkGreetingReceiver); ok {
 		reportReceivers["link-greeting"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(LinkGreetingReceiver).LinkGreeting(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(LinkGreetingReceiver).LinkGreeting(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(LinkIdentifyReceiver); ok {
+	if _, ok := fwi.Filter.(LinkIdentifyReceiver); ok {
 		reportReceivers["link-identify"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(LinkIdentifyReceiver).LinkIdentity(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(LinkIdentifyReceiver).LinkIdentity(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(LinkTLSReceiver); ok {
+	if _, ok := fwi.Filter.(LinkTLSReceiver); ok {
 		reportReceivers["link-tls"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(LinkTLSReceiver).LinkTLS(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(LinkTLSReceiver).LinkTLS(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(LinkAuthReceiver); ok {
+	if _, ok := fwi.Filter.(LinkAuthReceiver); ok {
 		reportReceivers["link-auth"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(LinkAuthReceiver).LinkAuth(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(LinkAuthReceiver).LinkAuth(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TxResetReceiver); ok {
+	if _, ok := fwi.Filter.(TxResetReceiver); ok {
 		reportReceivers["tx-reset"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(TxResetReceiver).TxReset(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(TxResetReceiver).TxReset(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TxBeginReceiver); ok {
+	if _, ok := fwi.Filter.(TxBeginReceiver); ok {
 		reportReceivers["tx-begin"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(TxBeginReceiver).TxBegin(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(TxBeginReceiver).TxBegin(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TxMailReceiver); ok {
+	if _, ok := fwi.Filter.(TxMailReceiver); ok {
 		reportReceivers["tx-mail"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(TxMailReceiver).TxMail(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(TxMailReceiver).TxMail(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TxRcptReceiver); ok {
+	if _, ok := fwi.Filter.(TxRcptReceiver); ok {
 		reportReceivers["tx-rcpt"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(TxRcptReceiver).TxRcpt(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(TxRcptReceiver).TxRcpt(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TxEnvelopeReceiver); ok {
+	if _, ok := fwi.Filter.(TxEnvelopeReceiver); ok {
 		reportReceivers["tx-envelope"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(TxEnvelopeReceiver).TxEnvelope(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(TxEnvelopeReceiver).TxEnvelope(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TxDataReceiver); ok {
+	if _, ok := fwi.Filter.(TxDataReceiver); ok {
 		reportReceivers["tx-data"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(TxDataReceiver).TxData(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(TxDataReceiver).TxData(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TxCommitReceiver); ok {
+	if _, ok := fwi.Filter.(TxCommitReceiver); ok {
 		reportReceivers["tx-commit"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(TxCommitReceiver).TxCommit(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(TxCommitReceiver).TxCommit(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TxRollbackReceiver); ok {
+	if _, ok := fwi.Filter.(TxRollbackReceiver); ok {
 		reportReceivers["link-connect"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(LinkConnectReceiver).LinkConnect(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(LinkConnectReceiver).LinkConnect(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(ProtocolClientReceiver); ok {
+	if _, ok := fwi.Filter.(ProtocolClientReceiver); ok {
 		reportReceivers["protocol-client"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(ProtocolClientReceiver).ProtocolClient(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(ProtocolClientReceiver).ProtocolClient(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(ProtocolServerReceiver); ok {
+	if _, ok := fwi.Filter.(ProtocolServerReceiver); ok {
 		reportReceivers["protocol-server"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(ProtocolServerReceiver).ProtocolServer(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(ProtocolServerReceiver).ProtocolServer(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(TimeoutReceiver); ok {
+	if _, ok := fwi.Filter.(TimeoutReceiver); ok {
 		reportReceivers["timeout"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(TimeoutReceiver).Timeout(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(TimeoutReceiver).Timeout(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(FilterResponseReceiver); ok {
+	if _, ok := fwi.Filter.(FilterResponseReceiver); ok {
 		reportReceivers["filter-response"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(FilterResponseReceiver).FilterResponse(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(FilterResponseReceiver).FilterResponse(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(FilterReportReceiver); ok {
+	if _, ok := fwi.Filter.(FilterReportReceiver); ok {
 		reportReceivers["filter-report"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(FilterReportReceiver).FilterReport(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(FilterReportReceiver).FilterReport(fw, verb, sh, sessionId, params)
 			}
 	}
 	capabilities["report"] = reportReceivers
 
 	capabilities["filter"] = make(map[string]EventHandler)
 	filters := capabilities["filter"]
-	if _, ok := fw.Filter.(ConnectFilter); ok {
+	if _, ok := fwi.Filter.(ConnectFilter); ok {
 		filters["connect"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(ConnectFilter).Connect(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(ConnectFilter).Connect(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(HeloFilter); ok {
+	if _, ok := fwi.Filter.(HeloFilter); ok {
 		filters["helo"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(HeloFilter).Helo(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(HeloFilter).Helo(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(EhloFilter); ok {
+	if _, ok := fwi.Filter.(EhloFilter); ok {
 		filters["ehlo"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(EhloFilter).Ehlo(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(EhloFilter).Ehlo(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(StartTLSFilter); ok {
+	if _, ok := fwi.Filter.(StartTLSFilter); ok {
 		filters["starttls"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(StartTLSFilter).StartTLS(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(StartTLSFilter).StartTLS(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(AuthFilter); ok {
+	if _, ok := fwi.Filter.(AuthFilter); ok {
 		filters["auth"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(AuthFilter).Auth(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(AuthFilter).Auth(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(MailFromFilter); ok {
+	if _, ok := fwi.Filter.(MailFromFilter); ok {
 		filters["mail-from"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(MailFromFilter).MailFrom(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(MailFromFilter).MailFrom(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(RcptToFilter); ok {
+	if _, ok := fwi.Filter.(RcptToFilter); ok {
 		filters["rcpt-to"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(RcptToFilter).RcptTo(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(RcptToFilter).RcptTo(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(DataFilter); ok {
+	if _, ok := fwi.Filter.(DataFilter); ok {
 		filters["data"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(DataFilter).Data(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(DataFilter).Data(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(DatalineFilter); ok {
+	if _, ok := fwi.Filter.(DatalineFilter); ok {
 		filters["data-line"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(DatalineFilter).Dataline(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(DatalineFilter).Dataline(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(RsetFilter); ok {
+	if _, ok := fwi.Filter.(RsetFilter); ok {
 		filters["rset"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(RsetFilter).Rset(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(RsetFilter).Rset(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(QuitFilter); ok {
+	if _, ok := fwi.Filter.(QuitFilter); ok {
 		filters["quit"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(QuitFilter).Quit(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(QuitFilter).Quit(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(NoopFilter); ok {
+	if _, ok := fwi.Filter.(NoopFilter); ok {
 		filters["noop"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(NoopFilter).Noop(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(NoopFilter).Noop(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(HelpFilter); ok {
+	if _, ok := fwi.Filter.(HelpFilter); ok {
 		filters["help"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(HelpFilter).Help(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(HelpFilter).Help(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(WizFilter); ok {
+	if _, ok := fwi.Filter.(WizFilter); ok {
 		filters["wiz"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(WizFilter).Wiz(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(WizFilter).Wiz(fw, verb, sh, sessionId, params)
 			}
 	}
-	if _, ok := fw.Filter.(CommitFilter); ok {
+	if _, ok := fwi.Filter.(CommitFilter); ok {
 		filters["commit"] =
-			func(verb string, sh SessionHolder, sessionId string, params []string) {
-				fw.Filter.(CommitFilter).Commit(verb, sh, sessionId, params)
+			func(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+				fw.GetFilter().(CommitFilter).Commit(fw, verb, sh, sessionId, params)
 			}
 	}
 
@@ -296,8 +296,8 @@ func (fw *FilterWrapperImpl) GetCapabilities() FilterDispatchMap {
 	return capabilities
 }
 
-func (fw *FilterWrapperImpl) Register() {
-	capabilities := fw.GetCapabilities()
+func (fwi *FilterWrapperImpl) Register() {
+	capabilities := fwi.GetCapabilities()
 	for typ := range capabilities {
 		for op := range capabilities[typ] {
 			fmt.Printf("register|%v|smtp-in|%v\n", typ, op)
@@ -346,27 +346,27 @@ func WriteMultilineHeader(token, sessionId, header, value string) {
 	}
 }
 
-func (fw *FilterWrapperImpl) Dispatch(atoms []string) {
+func (fwi *FilterWrapperImpl) Dispatch(atoms []string) {
 	var sh SessionHolder
 	var ok bool
-	if sh, ok = fw.Filter.(SessionHolder); !ok {
+	if sh, ok = fwi.Filter.(SessionHolder); !ok {
 		sh = nil
 	}
 
-	fcap := fw.GetCapabilities()
+	fcap := fwi.GetCapabilities()
 	log.Printf("type: %v op: %v", atoms[0], atoms[4])
 	if handler, ok := fcap[atoms[0]][atoms[4]]; ok {
-		handler(atoms[4], sh, atoms[5], atoms[6:])
+		handler(fwi, atoms[4], sh, atoms[5], atoms[6:])
 	}
 }
 
-func (fw *FilterWrapperImpl) ProcessConfig(scanner *bufio.Scanner) {
+func (fwi *FilterWrapperImpl) ProcessConfig(scanner *bufio.Scanner) {
 	for {
 		if !scanner.Scan() {
 			os.Exit(0)
 		}
 		line := scanner.Text()
-		if cr, ok := fw.Filter.(ConfigReceiver); ok {
+		if cr, ok := fwi.Filter.(ConfigReceiver); ok {
 			cr.Config(strings.Split(line, "|"))
 		}
 
