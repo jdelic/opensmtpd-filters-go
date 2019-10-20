@@ -208,43 +208,43 @@ func (fw *FilterWrapperImpl) GetCapabilities() FilterDispatchMap {
 			}
 	}
 	if _, ok := fw.Filter.(HeloFilter); ok {
-		filters["connect"] =
+		filters["helo"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(HeloFilter).Helo(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(EhloFilter); ok {
-		filters["connect"] =
+		filters["ehlo"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(EhloFilter).Ehlo(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(StartTLSFilter); ok {
-		filters["connect"] =
+		filters["starttls"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(StartTLSFilter).StartTLS(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(AuthFilter); ok {
-		filters["connect"] =
+		filters["auth"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(AuthFilter).Auth(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(MailFromFilter); ok {
-		filters["connect"] =
+		filters["mail-from"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(MailFromFilter).MailFrom(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(RcptToFilter); ok {
-		filters["connect"] =
+		filters["rcpt-to"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(RcptToFilter).RcptTo(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(DataFilter); ok {
-		filters["connect"] =
+		filters["data"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(DataFilter).Data(verb, sh, sessionId, params)
 			}
@@ -256,31 +256,31 @@ func (fw *FilterWrapperImpl) GetCapabilities() FilterDispatchMap {
 			}
 	}
 	if _, ok := fw.Filter.(RsetFilter); ok {
-		filters["connect"] =
+		filters["rset"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(RsetFilter).Rset(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(QuitFilter); ok {
-		filters["commit"] =
+		filters["quit"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(QuitFilter).Quit(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(NoopFilter); ok {
-		filters["commit"] =
+		filters["noop"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(NoopFilter).Noop(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(HelpFilter); ok {
-		filters["commit"] =
+		filters["help"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(HelpFilter).Help(verb, sh, sessionId, params)
 			}
 	}
 	if _, ok := fw.Filter.(WizFilter); ok {
-		filters["commit"] =
+		filters["wiz"] =
 			func(verb string, sh SessionHolder, sessionId string, params []string) {
 				fw.Filter.(WizFilter).Wiz(verb, sh, sessionId, params)
 			}
