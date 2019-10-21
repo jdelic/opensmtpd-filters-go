@@ -30,22 +30,6 @@ import (
 )
 
 
-type SMTPSession struct {
-	Id string
-
-	Rdns string
-	Src string
-	HeloName string
-	UserName string
-	MtaName string
-
-	Msgid string
-	MailFrom string
-	RcptTo []string
-	Message []string
-}
-
-
 type FilterWrapper interface {
 	GetCapabilities() FilterDispatchMap
 	Register()

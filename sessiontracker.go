@@ -5,6 +5,21 @@ import (
 	"strings"
 )
 
+type SMTPSession struct {
+	Id string
+
+	Rdns string
+	Src string
+	HeloName string
+	UserName string
+	MtaName string
+
+	Msgid string
+	MailFrom string
+	RcptTo []string
+	Message []string
+}
+
 type SessionHolder interface {
 	GetSessions() map[string]*SMTPSession
 	GetSession(string) *SMTPSession
@@ -159,6 +174,10 @@ func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, verb string, sh Sessi
 		}
 		return
 	}
+
+	// Input is raw SMTP data - unescape leading dots.
+	line = strings.TrimPrefix(line, ".")
+
 	s.Message = append(s.Message, line)
 	sh.SetSession(s)
 }
