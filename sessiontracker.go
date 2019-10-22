@@ -165,7 +165,7 @@ func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, verb string, sh Sessi
 	s := sh.GetSession(sessionId)
 	if line == "." {
 		s.Message = append(s.Message, line)
-		if cb, ok := (interface {})(*sf).(MessageReceivedCallback); ok {
+		if cb, ok := fw.GetFilter().(MessageReceivedCallback); ok {
 			s := sh.GetSession(sessionId)
 			cb.MessageComplete(params[0], s)
 			sh.SetSession(s)
@@ -182,9 +182,4 @@ func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, verb string, sh Sessi
 	sh.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) Commit(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
-	if len(params) != 2 {
-		log.Fatal("invalid input, shouldn't happen")
-	}
-}
 
