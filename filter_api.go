@@ -314,8 +314,17 @@ func FlushMessage(token string, session *SMTPSession) {
 	fmt.Printf("filter-dataline|%s|%s|.\n", token, session.Id)
 }
 
+func DatalineEnd(token, sessionId string) {
+	fmt.Printf("filter-dataline|%s|%s|.\n", token, sessionId)
+}
+
 func DatalineReply(token, sessionId, line string) {
-	fmt.Printf("filter-dataline|%s|%s|%s\n", token, sessionId, line)
+	prefix := ""
+	// Output raw SMTP data - escape leading dots.
+	if strings.HasPrefix(line, ".") {
+		prefix = "."
+	}
+	fmt.Printf("filter-dataline|%s|%s|%s%s\n", token, sessionId, prefix, line)
 }
 
 func WriteMultilineHeader(token, sessionId, header, value string) {
