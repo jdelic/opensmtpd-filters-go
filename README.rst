@@ -22,24 +22,46 @@ instance to ``opensmtpd.NewFilter``.
         "log"
         "github.com/jdelic/opensmtpd-filters-go"
     )
-    
+
     type FilterExample struct {}
-    
-    func (ex *FilterExample) LinkConnect(fw opensmtpd.FilterWrapper, 
+
+    // implement the required opensmtpd.Filter interface
+    func (ex *FilterExample) GetName() string {
+        return "My example filter"
+    }
+
+    func (ex *FilterExample) LinkConnect(fw opensmtpd.FilterWrapper,
         verb string, sh SessionHolder, sessionId string, params []string) {
         log.Println("link-connect received")
-    } 
-    
+    }
+
     func main() {
         log.SetOutput(os.Stderr)  // stderr is forwarded to log by opensmtpd
         myFilter := opensmtpd.NewFilter(&FilterExample{})
         opensmtpd.Run(myFilter)
     }
-    
+
 
 Provided interfaces
 ===================
 
+Every filter must implement the ``opensmtpd.Filter`` interface. That interface
+is really just a placeholder for now. However, without it, Go makes it
+impossible to enforce that the filter instance must be passed by reference and
+as all filter methods should use a pointer receiver you would experience
+problems otherwise as ``opensmtpd.Register`` would be unable to figure out
+the interfaces your filter actually implements.
+
 Reporters
 ---------
 
+See `opensmtpd-filters-go/report_api_interfaces.go <reporters_>`__.
+
+Filters
+-------
+
+See `opensmtpd-filters-go/filter_api_interfaces.go <filters_>`__.
+
+
+.. _filters: https://github.com/jdelic/opensmtpd-filters-go/blob/master/filter_api_interfaces.go
+.. _reporters: https://github.com/jdelic/opensmtpd-filters-go/blob/master/report_api_interfaces.go
