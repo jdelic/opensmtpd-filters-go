@@ -38,6 +38,10 @@ type FilterWrapper interface {
 	GetFilter() interface{}
 }
 
+type Filter interface {
+	GetName() string
+}
+
 type ConfigReceiver interface {
 	Config([]string)
 }
@@ -284,38 +288,38 @@ func (fwi *FilterWrapperImpl) Register() {
 	capabilities := fwi.GetCapabilities()
 	for typ := range capabilities {
 		for op := range capabilities[typ] {
-			fmt.Printf("register|%v|smtp-in|%v\n", typ, op)
+			SafePrintf("register|%v|smtp-in|%v\n", typ, op)
 		}
 	}
-	fmt.Println("register|ready")
+	SafePrintln("register|ready")
 }
 
 
 func Proceed(token, sessionId string) {
-	fmt.Printf("filter-result|%s|%s|proceed\n", token, sessionId)
+	SafePrintf("filter-result|%s|%s|proceed\n", token, sessionId)
 }
 
 func HardReject(token, sessionId, response string) {
-	fmt.Printf("filter-result|%s|%s|reject|550 %s\n", token, sessionId, response)
+	SafePrintf("filter-result|%s|%s|reject|550 %s\n", token, sessionId, response)
 }
 
 func Greylist(token, sessionId, response string) {
-	fmt.Printf("filter-result|%s|%s|reject|421 %s\n", token, sessionId, response)
+	SafePrintf("filter-result|%s|%s|reject|421 %s\n", token, sessionId, response)
 }
 
 func SoftReject(token, sessionId, response string) {
-	fmt.Printf("filter-result|%s|%s|reject|451 %s\n", token, sessionId, response)
+	SafePrintf("filter-result|%s|%s|reject|451 %s\n", token, sessionId, response)
 }
 
 func FlushMessage(token string, session *SMTPSession) {
 	for _, line := range session.Message {
-		fmt.Printf("filter-dataline|%s|%s|%s\n", token, session.Id, line)
+		SafePrintf("filter-dataline|%s|%s|%s\n", token, session.Id, line)
 	}
-	fmt.Printf("filter-dataline|%s|%s|.\n", token, session.Id)
+	SafePrintf("filter-dataline|%s|%s|.\n", token, session.Id)
 }
 
 func DatalineEnd(token, sessionId string) {
-	fmt.Printf("filter-dataline|%s|%s|.\n", token, sessionId)
+	SafePrintf("filter-dataline|%s|%s|.\n", token, sessionId)
 }
 
 func DatalineReply(token, sessionId, line string) {
@@ -324,17 +328,15 @@ func DatalineReply(token, sessionId, line string) {
 	if strings.HasPrefix(line, ".") {
 		prefix = "."
 	}
-	fmt.Printf("filter-dataline|%s|%s|%s%s\n", token, sessionId, prefix, line)
+	SafePrintf("filter-dataline|%s|%s|%s%s\n", token, sessionId, prefix, line)
 }
 
 func WriteMultilineHeader(token, sessionId, header, value string) {
 	for i, line := range strings.Split(value, "\n") {
 		if i == 0 {
-			fmt.Printf("filter-dataline|%s|%s|%s: %s\n",
-				token, sessionId, header, line)
+			SafePrintf("filter-dataline|%s|%s|%s: %s\n", token, sessionId, header, line)
 		} else {
-			fmt.Printf("filter-dataline|%s|%s|%s\n",
-				token, sessionId, line)
+			SafePrintf("filter-dataline|%s|%s|%s\n", token, sessionId, line)
 		}
 	}
 }
@@ -347,7 +349,6 @@ func (fwi *FilterWrapperImpl) Dispatch(atoms []string) {
 	}
 
 	fcap := fwi.GetCapabilities()
-	log.Printf("type: %v op: %v", atoms[0], atoms[4])
 	if handler, ok := fcap[atoms[0]][atoms[4]]; ok {
 		handler(fwi, atoms[4], sh, atoms[5], atoms[6:])
 	}
@@ -370,14 +371,32 @@ func (fwi *FilterWrapperImpl) ProcessConfig(scanner *bufio.Scanner) {
 }
 
 
-func NewFilter(filter interface{}) FilterWrapper {
+func NewFilter(filter Filter) FilterWrapper {
 	return &FilterWrapperImpl{
 		Filter: filter,
     }
 }
 
+var stdoutChannel = make(chan string)
+
+func stdoutWriter(out <-chan string) {
+	for str := range out {
+		fmt.Print(str)
+	}
+}
+
+func SafePrintf(format string, params... interface{}) {
+	stdoutChannel <- fmt.Sprintf(format, params...)
+}
+
+func SafePrintln(msg string) {
+	stdoutChannel <- msg + "\n"
+}
 
 func Run(fw FilterWrapper) {
+	// start the stdout writer goroutine so we can write thread safe
+	go stdoutWriter(stdoutChannel)
+
 	scanner := bufio.NewScanner(os.Stdin)
 
 	fw.ProcessConfig(scanner)
