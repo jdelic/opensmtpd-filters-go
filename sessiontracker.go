@@ -181,5 +181,3 @@ func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, verb string, sh Sessi
 	s.Message = append(s.Message, line)
 	sh.SetSession(s)
 }
-
-
