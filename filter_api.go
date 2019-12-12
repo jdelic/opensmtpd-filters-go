@@ -410,8 +410,7 @@ func Run(fw FilterWrapper) {
 
 		atoms := strings.Split(scanner.Text(), "|")
 		if len(atoms) < 6 {
-			log.Printf("Less than 6 atoms")
-			os.Exit(1)
+			log.Fatal("Less than 6 atoms")
 		}
 
 		fw.Dispatch(atoms)
