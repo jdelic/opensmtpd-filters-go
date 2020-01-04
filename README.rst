@@ -13,7 +13,7 @@ The basic principle of the library is to abstract away most of the ongoing
 communication and common patterns from your program and allow you to focus on
 purely the "business logic" of your filter. You do so by creating a class that
 implements any of the interfaces listed below and then passing a pointer to an
-instance to ``opensmtpd.NewFilter``.
+instance to ``opensmtpd.NewFilter`` and subsequently ``opensmtpd.Run``.
 
 .. code-block:: go
 
