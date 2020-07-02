@@ -52,82 +52,93 @@ type SessionTrackingMixin struct {
 	SessionHolderImpl
 }
 
-func (sf *SessionTrackingMixin) LinkConnect(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
-	if len(params) != 4 {
+func (sf *SessionTrackingMixin) LinkConnect(fw FilterWrapper, ev FilterEvent) {
+	if len(ev.GetParams()) != 4 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
+	params := ev.GetParams()
+
 	s := SMTPSession{}
-	s.Id = sessionId
+	s.Id = ev.GetSessionId()
 	s.Rdns = params[0]
 	s.Src = params[2]
 
-	sh.SetSession(&s)
+	sf.SetSession(&s)
 }
 
-func (sf *SessionTrackingMixin) LinkDisconnect(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
-	if len(params) != 0 {
+func (sf *SessionTrackingMixin) LinkDisconnect(fw FilterWrapper, ev FilterEvent) {
+	if len(ev.GetParams()) != 0 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
-	delete(sh.GetSessions(), sessionId)
+
+	delete(sf.GetSessions(), ev.GetSessionId())
 }
 
-func (sf *SessionTrackingMixin) LinkGreeting(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkGreeting(fw FilterWrapper, ev FilterEvent) {
+	params := ev.GetParams()
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	s := sh.GetSession(sessionId)
+	s := sf.GetSession(ev.GetSessionId())
 	s.MtaName = params[0]
-	sh.SetSession(s)
+	sf.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) LinkIdentify(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkIdentify(fw FilterWrapper, ev FilterEvent) {
+	params := ev.GetParams()
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	s := sh.GetSession(sessionId)
-	s.HeloName = params[1]
-	sh.SetSession(s)
+	if sh, ok := fw.GetFilter().(SessionHolder); ok {
+		s := sh.GetSession(ev.GetSessionId())
+		s.HeloName = params[1]
+		sh.SetSession(s)
+	}
 }
 
-func (sf *SessionTrackingMixin) LinkAuth(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) LinkAuth(fw FilterWrapper, ev FilterEvent) {
+	params := ev.GetParams()
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	if params[1] != "pass" {
 		return
 	}
-	s := sh.GetSession(sessionId)
+	s := sf.GetSession(ev.GetSessionId())
 	s.UserName = params[0]
-	sh.SetSession(s)
+	sf.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxReset(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxReset(fw FilterWrapper, ev FilterEvent) {
+	params := ev.GetParams()
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	s := sh.GetSession(sessionId)
+	s := sf.GetSession(ev.GetSessionId())
 	s.Msgid = ""
 	s.MailFrom = ""
 	s.RcptTo = nil
 	s.Message = nil
-	sh.SetSession(s)
+	sf.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxBegin(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxBegin(fw FilterWrapper, ev FilterEvent) {
+	params := ev.GetParams()
 	if len(params) != 1 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 
-	s := sh.GetSession(sessionId)
+	s := sf.GetSession(ev.GetSessionId())
 	s.Msgid = params[0]
-	sh.SetSession(s)
+	sf.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxMail(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxMail(fw FilterWrapper, ev FilterEvent) {
+	params := ev.GetParams()
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -136,12 +147,13 @@ func (sf *SessionTrackingMixin) TxMail(fw FilterWrapper, verb string, sh Session
 		return
 	}
 
-	s := sh.GetSession(sessionId)
+	s := sf.GetSession(ev.GetSessionId())
 	s.MailFrom = params[1]
-	sh.SetSession(s)
+	sf.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) TxRcpt(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) TxRcpt(fw FilterWrapper, ev FilterEvent) {
+	params := ev.GetParams()
 	if len(params) != 3 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
@@ -150,27 +162,27 @@ func (sf *SessionTrackingMixin) TxRcpt(fw FilterWrapper, verb string, sh Session
 		return
 	}
 
-	s := sh.GetSession(sessionId)
+	s := sf.GetSession(ev.GetSessionId())
 	s.RcptTo = append(s.RcptTo, params[1])
-	sh.SetSession(s)
+	sf.SetSession(s)
 }
 
-func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, verb string, sh SessionHolder, sessionId string, params []string) {
+func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, ev FilterEvent) {
+	params := ev.GetParams()
 	if len(params) < 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	//token := params[0]
 	line := strings.Join(params[1:], "")
 
-	s := sh.GetSession(sessionId)
+	s := sf.GetSession(ev.GetSessionId())
 	if line == "." {
 		s.Message = append(s.Message, line)
 		if cb, ok := fw.GetFilter().(MessageReceivedCallback); ok {
-			s := sh.GetSession(sessionId)
-			cb.MessageComplete(params[0], s)
-			sh.SetSession(s)
+			cb.MessageComplete(ev.GetToken(), s)
+			sf.SetSession(s)
 		} else {
-			FlushMessage(params[0], sh.GetSession(sessionId))
+			ev.Responder().FlushMessage(s)
 		}
 		return
 	}
@@ -179,5 +191,5 @@ func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, verb string, sh Sessi
 	line = strings.TrimPrefix(line, ".")
 
 	s.Message = append(s.Message, line)
-	sh.SetSession(s)
+	sf.SetSession(s)
 }

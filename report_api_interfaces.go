@@ -1,77 +1,81 @@
 package opensmtpd
 
 type LinkConnectReceiver interface {
-	LinkConnect(FilterWrapper, string, SessionHolder, string, []string)
+	LinkConnect(FilterWrapper, FilterEvent)
 }
 
 type LinkDisconnectReceiver interface {
-	LinkDisconnect(FilterWrapper, string, SessionHolder, string, []string)
+	LinkDisconnect(FilterWrapper, FilterEvent)
 }
 
 type LinkGreetingReceiver interface {
-	LinkGreeting(FilterWrapper, string, SessionHolder, string, []string)
+	LinkGreeting(FilterWrapper, FilterEvent)
 }
 
 type LinkIdentifyReceiver interface {
-	LinkIdentity(FilterWrapper, string, SessionHolder, string, []string)
+	LinkIdentity(FilterWrapper, FilterEvent)
 }
 
 type LinkTLSReceiver interface {
-	LinkTLS(FilterWrapper, string, SessionHolder, string, []string)
+	LinkTLS(FilterWrapper, FilterEvent)
 }
 
 type LinkAuthReceiver interface {
-	LinkAuth(FilterWrapper, string, SessionHolder, string, []string)
+	LinkAuth(FilterWrapper, FilterEvent)
 }
 
 type TxResetReceiver interface {
-	TxReset(FilterWrapper, string, SessionHolder, string, []string)
+	TxReset(FilterWrapper, FilterEvent)
+}
+
+type TxBeginCallback interface {
+	TxBeginCallback(string, *SMTPSession)
 }
 
 type TxBeginReceiver interface {
-	TxBegin(FilterWrapper, string, SessionHolder, string, []string)
+	TxBegin(FilterWrapper, FilterEvent)
 }
 
 type TxMailReceiver interface {
-	TxMail(FilterWrapper, string, SessionHolder, string, []string)
+	TxMail(FilterWrapper, FilterEvent)
 }
 
 type TxRcptReceiver interface {
-	TxRcpt(FilterWrapper, string, SessionHolder, string, []string)
+	TxRcpt(FilterWrapper, FilterEvent)
 }
 
 type TxEnvelopeReceiver interface {
-	TxEnvelope(FilterWrapper, string, SessionHolder, string, []string)
+	TxEnvelope(FilterWrapper, FilterEvent)
 }
 
 type TxDataReceiver interface {
-	TxData(FilterWrapper, string, SessionHolder, string, []string)
+	TxData(FilterWrapper, FilterEvent)
 }
 
 type TxCommitReceiver interface {
-	TxCommit(FilterWrapper, string, SessionHolder, string, []string)
+	TxCommit(FilterWrapper, FilterEvent)
 }
 
 type TxRollbackReceiver interface {
-	TxRollback(FilterWrapper, string, SessionHolder, string, []string)
+	TxRollback(FilterWrapper, FilterEvent)
 }
 
 type ProtocolClientReceiver interface {
-	ProtocolClient(FilterWrapper, string, SessionHolder, string, []string)
+	ProtocolClient(FilterWrapper, FilterEvent)
 }
 
 type ProtocolServerReceiver interface {
-	ProtocolServer(FilterWrapper, string, SessionHolder, string, []string)
+	ProtocolServer(FilterWrapper, FilterEvent)
 }
 
 type FilterReportReceiver interface {
-	FilterReport(FilterWrapper, string, SessionHolder, string, []string)
+	FilterReport(FilterWrapper, FilterEvent)
 }
 
 type FilterResponseReceiver interface {
-	FilterResponse(FilterWrapper, string, SessionHolder, string, []string)
+	FilterResponse(FilterWrapper, FilterEvent)
 }
 
 type TimeoutReceiver interface {
-	Timeout(FilterWrapper, string, SessionHolder, string, []string)
+	Timeout(FilterWrapper, FilterEvent)
 }

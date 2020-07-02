@@ -1,62 +1,70 @@
 package opensmtpd
 
 
+type ConfigReceiver interface {
+	Config([]string)
+}
+
+type MessageReceivedCallback interface {
+	MessageComplete(string, *SMTPSession)
+}
+
 type ConnectFilter interface {
-	Connect(FilterWrapper, string, SessionHolder, string, []string)
+	Connect(FilterWrapper, FilterEvent)
 }
 
 type HeloFilter interface {
-	Helo(FilterWrapper, string, SessionHolder, string, []string)
+	Helo(FilterWrapper, FilterEvent)
 }
 
 type EhloFilter interface {
-	Ehlo(FilterWrapper, string, SessionHolder, string, []string)
+	Ehlo(FilterWrapper, FilterEvent)
 }
 
 type StartTLSFilter interface {
-	StartTLS(FilterWrapper, string, SessionHolder, string, []string)
+	StartTLS(FilterWrapper, FilterEvent)
 }
 
 type AuthFilter interface {
-	Auth(FilterWrapper, string, SessionHolder, string, []string)
+	Auth(FilterWrapper, FilterEvent)
 }
 
 type MailFromFilter interface {
-	MailFrom(FilterWrapper, string, SessionHolder, string, []string)
+	MailFrom(FilterWrapper, FilterEvent)
 }
 
 type RcptToFilter interface {
-	RcptTo(FilterWrapper, string, SessionHolder, string, []string)
+	RcptTo(FilterWrapper, FilterEvent)
 }
 
 type DataFilter interface {
-	Data(FilterWrapper, string, SessionHolder, string, []string)
+	Data(FilterWrapper, FilterEvent)
 }
 
 type DatalineFilter interface {
-	Dataline(FilterWrapper, string, SessionHolder, string, []string)
+	Dataline(FilterWrapper, FilterEvent)
 }
 
 type RsetFilter interface {
-	Rset(FilterWrapper, string, SessionHolder, string, []string)
+	Rset(FilterWrapper, FilterEvent)
 }
 
 type QuitFilter interface {
-	Quit(FilterWrapper, string, SessionHolder, string, []string)
+	Quit(FilterWrapper, FilterEvent)
 }
 
 type NoopFilter interface {
-	Noop(FilterWrapper, string, SessionHolder, string, []string)
+	Noop(FilterWrapper, FilterEvent)
 }
 
 type HelpFilter interface {
-	Help(FilterWrapper, string, SessionHolder, string, []string)
+	Help(FilterWrapper, FilterEvent)
 }
 
 type WizFilter interface {
-	Wiz(FilterWrapper, string, SessionHolder, string, []string)
+	Wiz(FilterWrapper, FilterEvent)
 }
 
 type CommitFilter interface {
-	Commit(FilterWrapper, string, SessionHolder, string, []string)
+	Commit(FilterWrapper, FilterEvent)
 }
