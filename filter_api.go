@@ -46,26 +46,13 @@ type EventHandler = func(FilterWrapper, FilterEvent)
  */
 type FilterDispatchMap = map[string]map[string]EventHandler
 
-
-type EventResponder interface {
-	Proceed()
-	HardReject(response string)
-	SoftReject(response string)
-	Greylist(response string)
-	DatalineReply(line string)
-	DatalineEnd()
-	WriteMultilineHeader(header, value string)
-	SafePrintf(format string, params... interface{})
-	SafePrintln(msg string)
-	FlushMessage(session *SMTPSession)
-}
-
 type FilterEventData struct {
 	atoms[] string
 }
 
 type FilterEvent interface {
 	GetAtoms() []string
+	GetProtocolVersion() string
 	GetVerb() string
 	GetSessionId() string
 	GetToken() string
@@ -73,12 +60,12 @@ type FilterEvent interface {
 	Responder() EventResponder
 }
 
-type EventResponderImpl struct {
-	event FilterEvent
-}
-
 type FilterEventImpl struct {
 	FilterEventData
+}
+
+func (freq FilterEventImpl) GetProtocolVersion() string {
+	return freq.atoms[1]
 }
 
 func (freq FilterEventImpl) GetVerb() string {
@@ -106,72 +93,11 @@ func (freq FilterEventImpl) GetAtoms() []string {
 }
 
 func (freq *FilterEventImpl) Responder() EventResponder {
+	// handle protocol version differences
+	if freq.atoms[1] < "0.5" {
+
+	}
 	return NewEventResponder(freq)
-}
-
-func (evr *EventResponderImpl) Proceed() {
-	evr.SafePrintf("filter-result|%s|%s|proceed\n", evr.event.GetToken(), evr.event.GetSessionId())
-}
-
-func (evr *EventResponderImpl) HardReject(response string) {
-	evr.SafePrintf("filter-result|%s|%s|reject|550 %s\n", evr.event.GetToken(), evr.event.GetSessionId(), response)
-}
-
-func (evr *EventResponderImpl) Greylist(response string) {
-	evr.SafePrintf("filter-result|%s|%s|reject|421 %s\n", evr.event.GetToken(), evr.event.GetSessionId(), response)
-}
-
-func (evr *EventResponderImpl) SoftReject(response string) {
-	evr.SafePrintf("filter-result|%s|%s|reject|451 %s\n", evr.event.GetToken(), evr.event.GetSessionId(), response)
-}
-
-func (evr *EventResponderImpl) FlushMessage(session *SMTPSession) {
-	token := evr.event.GetToken()
-	for _, line := range session.Message {
-		evr.SafePrintf("filter-dataline|%s|%s|%s\n", token, session.Id, line)
-	}
-	evr.SafePrintf("filter-dataline|%s|%s|.\n", token, session.Id)
-}
-
-func (evr *EventResponderImpl) DatalineEnd() {
-	evr.SafePrintf("filter-dataline|%s|%s|.\n", evr.event.GetToken(), evr.event.GetSessionId())
-}
-
-func (evr *EventResponderImpl) DatalineReply(line string) {
-	prefix := ""
-	// Output raw SMTP data - escape leading dots.
-	if strings.HasPrefix(line, ".") {
-		prefix = "."
-	}
-	evr.SafePrintf("filter-dataline|%s|%s|%s%s\n", evr.event.GetToken(), evr.event.GetSessionId(), prefix, line)
-}
-
-func (evr *EventResponderImpl) WriteMultilineHeader(header, value string) {
-	token := evr.event.GetToken()
-	sessionId := evr.event.GetSessionId()
-	for i, line := range strings.Split(value, "\n") {
-		if i == 0 {
-			evr.SafePrintf("filter-dataline|%s|%s|%s: %s\n", token, sessionId, header, line)
-		} else {
-			evr.SafePrintf("filter-dataline|%s|%s|%s\n", token, sessionId, line)
-		}
-	}
-}
-
-func (evr *EventResponderImpl) SafePrintf(format string, params... interface{}) {
-	stdoutChannel <- fmt.Sprintf(format, params...)
-}
-
-func (evr *EventResponderImpl) SafePrintln(msg string) {
-	stdoutChannel <- msg + "\n"
-}
-
-func NewEventResponder(_event FilterEvent) EventResponder {
-	resp := EventResponderImpl{
-		event: _event,
-	}
-
-	return &resp
 }
 
 func NewFilterEvent(_atoms []string) FilterEvent {
