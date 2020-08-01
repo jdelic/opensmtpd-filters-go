@@ -62,6 +62,15 @@ Filters
 
 See `opensmtpd-filters-go/filter_api_interfaces.go <filters_>`__.
 
+EventResponder
+--------------
+
+This interface is handed back from ``FilterEvent.Responder()`` and handles the
+communicating with the different versions of OpenSMTPD's filter API.
+
+See `opensmtpd-filters-go/eventresponder.go <eventresponders_>`__.
+
 
 .. _filters: https://github.com/jdelic/opensmtpd-filters-go/blob/master/filter_api_interfaces.go
 .. _reporters: https://github.com/jdelic/opensmtpd-filters-go/blob/master/report_api_interfaces.go
+.. _eventresponders: https://github.com/jdelic/opensmtpd-filters-go/blob/master/eventresponder.go
