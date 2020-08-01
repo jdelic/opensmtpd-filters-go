@@ -18,7 +18,10 @@ type EventResponder interface {
 	FlushMessage(session *SMTPSession)
 }
 
+type SafePrinter struct{}
+
 type EventResponderImpl struct {
+	SafePrinter
 	event FilterEvent
 }
 
@@ -84,7 +87,7 @@ func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string,
 	evr.SafePrintln(prefix + "|" + fmt.Sprintf(format, params))
 }
 
-func (evr *EventResponderImpl) SafePrintln(msg string) {
+func (sp *SafePrinter) SafePrintln(msg string) {
 	stdoutChannel <- msg + "\n"
 }
 

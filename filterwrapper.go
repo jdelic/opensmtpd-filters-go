@@ -2,6 +2,7 @@ package opensmtpd
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -243,7 +244,7 @@ func (fwi *FilterWrapperImpl) Register(out EventResponder) {
 	capabilities := fwi.GetCapabilities()
 	for typ := range capabilities {
 		for op := range capabilities[typ] {
-			out.SafePrintf("register|%v|smtp-in|%v\n", typ, op)
+			out.SafePrintln(fmt.Sprintf("register|%v|smtp-in|%v", typ, op))
 		}
 	}
 	out.SafePrintln("register|ready")
