@@ -13,7 +13,7 @@ type LinkGreetingReceiver interface {
 }
 
 type LinkIdentifyReceiver interface {
-	LinkIdentity(FilterWrapper, FilterEvent)
+	LinkIdentify(FilterWrapper, FilterEvent)
 }
 
 type LinkTLSReceiver interface {
