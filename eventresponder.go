@@ -84,7 +84,7 @@ func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string,
 	} else {
 		prefix = msgType + "|" + sessionId + "|" + token
 	}
-	evr.SafePrintln(prefix + "|" + fmt.Sprintf(format, params))
+	evr.SafePrintln(prefix + "|" + fmt.Sprintf(format, params...))
 }
 
 func (sp *SafePrinter) SafePrintln(msg string) {
