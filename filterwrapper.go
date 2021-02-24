@@ -46,10 +46,10 @@ func (fwi *FilterWrapperImpl) GetCapabilities() FilterDispatchMap {
 				fw.GetFilter().(LinkGreetingReceiver).LinkGreeting(fw, ev)
 			}
 	}
-	if _, ok := fwi.Filter.(LinkIdentityReceiver); ok {
+	if _, ok := fwi.Filter.(LinkIdentifyReceiver); ok {
 		reportReceivers["link-identify"] =
 			func(fw FilterWrapper, ev FilterEvent) {
-				fw.GetFilter().(LinkIdentityReceiver).LinkIdentity(fw, ev)
+				fw.GetFilter().(LinkIdentifyReceiver).LinkIdentify(fw, ev)
 			}
 	}
 	if _, ok := fwi.Filter.(LinkTLSReceiver); ok {
