@@ -124,6 +124,13 @@ func stdoutWriter(out <-chan string) {
 	}
 }
 
+type SafePrinter struct{}
+
+func (sp *SafePrinter) SafePrintln(msg string) {
+	stdoutChannel <- msg + "\n"
+}
+
+
 func Run(fw FilterWrapper) {
 	// start the stdout writer goroutine so we can write thread safe
 	go stdoutWriter(stdoutChannel)
@@ -135,7 +142,7 @@ func Run(fw FilterWrapper) {
 
 	for {
 		if !scanner.Scan() {
-			log.Printf("Scanner closed")
+			log.Println("Scanner closed")
 			os.Exit(0)
 		}
 

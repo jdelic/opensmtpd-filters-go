@@ -18,8 +18,6 @@ type EventResponder interface {
 	FlushMessage(session *SMTPSession)
 }
 
-type SafePrinter struct{}
-
 type EventResponderImpl struct {
 	SafePrinter
 	event FilterEvent
@@ -79,7 +77,7 @@ func (evr *EventResponderImpl) WriteMultilineHeader(header, value string) {
 
 func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string, params... interface{}) {
 	var prefix string
-	if evr.event.GetProtocolVersion() < "0.5" {
+	if evr.event.GetProtocolVersion() < "0.4" {
 		prefix = msgType + "|" + token + "|" + sessionId
 	} else {
 		prefix = msgType + "|" + sessionId + "|" + token
@@ -87,9 +85,6 @@ func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string,
 	evr.SafePrintln(prefix + "|" + fmt.Sprintf(format, params...))
 }
 
-func (sp *SafePrinter) SafePrintln(msg string) {
-	stdoutChannel <- msg + "\n"
-}
 
 func NewEventResponder(_event FilterEvent) EventResponder {
 	resp := EventResponderImpl{
