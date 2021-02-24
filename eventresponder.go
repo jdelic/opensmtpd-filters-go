@@ -26,7 +26,7 @@ type EventResponderImpl struct {
 }
 
 func (evr *EventResponderImpl) Proceed() {
-	evr.Respond("filter-result", evr.event.GetToken(), evr.event.GetSessionId(), "proceed")
+	evr.Respond("filter-result", evr.event.GetToken(), evr.event.GetSessionId(), "%s", "proceed")
 }
 
 func (evr *EventResponderImpl) HardReject(response string) {
