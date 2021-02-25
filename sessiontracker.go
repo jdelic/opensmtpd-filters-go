@@ -10,6 +10,8 @@ type SMTPSession struct {
 
 	Rdns string
 	Src string
+	SrcIp string
+	SrcPort string
 	HeloName string
 	UserName string
 	MtaName string
@@ -63,6 +65,21 @@ func (sf *SessionTrackingMixin) LinkConnect(fw FilterWrapper, ev FilterEvent) {
 	s.Id = ev.GetSessionId()
 	s.Rdns = params[0]
 	s.Src = params[2]
+
+	// parse ipv6 if necessary
+	tmp := strings.Split(s.Src, ":")
+	s.SrcPort = tmp[len(tmp)-1]
+
+	// remove the port (last section)
+	tmp = tmp[0:len(tmp)-1]
+
+	// reassemble ipv6 address with : separator
+	srcIp := strings.Join(tmp, ":")
+	if strings.HasPrefix(srcIp, "[") {
+		// remove the ipv6 wrapper []
+		srcIp = srcIp[1:len(srcIp)-1]
+	}
+	s.SrcIp = srcIp
 
 	sf.SetSession(&s)
 }
