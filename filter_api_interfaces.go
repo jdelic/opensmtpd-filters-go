@@ -6,7 +6,7 @@ type ConfigReceiver interface {
 }
 
 type MessageReceivedCallback interface {
-	MessageComplete(string, *SMTPSession)
+	MessageComplete(*FilterEvent, *SMTPSession)
 }
 
 type ConnectFilter interface {

@@ -194,10 +194,9 @@ func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, ev FilterEvent) {
 
 	s := sf.GetSession(ev.GetSessionId())
 	if line == "." {
-		s.Message = append(s.Message, line)
 		if cb, ok := fw.GetFilter().(MessageReceivedCallback); ok {
-			cb.MessageComplete(ev.GetToken(), s)
 			sf.SetSession(s)
+			cb.MessageComplete(&ev, s)
 		} else {
 			ev.Responder().FlushMessage(s)
 		}
@@ -206,7 +205,6 @@ func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, ev FilterEvent) {
 
 	// Input is raw SMTP data - unescape leading dots.
 	line = strings.TrimPrefix(line, ".")
-
 	s.Message = append(s.Message, line)
 	sf.SetSession(s)
 }
