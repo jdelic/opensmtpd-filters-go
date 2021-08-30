@@ -77,10 +77,10 @@ func (evr *EventResponderImpl) WriteMultilineHeader(header, value string) {
 
 func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string, params... interface{}) {
 	var prefix string
-	if evr.event.GetProtocolVersion() < "0.4" {
-		prefix = msgType + "|" + token + "|" + sessionId
-	} else {
+	if evr.event.GetProtocolVersion() < "0.5" {
 		prefix = msgType + "|" + sessionId + "|" + token
+	} else {
+		prefix = msgType + "|" + token + "|" + sessionId
 	}
 	evr.SafePrintln(prefix + "|" + fmt.Sprintf(format, params...))
 }
