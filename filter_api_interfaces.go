@@ -6,6 +6,13 @@ type ConfigReceiver interface {
 }
 
 type MessageReceivedCallback interface {
+	/*
+	MessageReceivedCallback is a custom callback that the message has been
+	transmitted completely and the "." end of message marker has been
+	received by the filter wrapper. Any implementation *must* flush the
+	message back to OpenSMTPD via ``FilterEvent.Responder().FlushMessage()``
+	or the message will be lost.
+	*/
 	MessageComplete(*FilterEvent, *SMTPSession)
 }
 

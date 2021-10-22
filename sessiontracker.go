@@ -121,6 +121,8 @@ func (sf *SessionTrackingMixin) LinkAuth(fw FilterWrapper, ev FilterEvent) {
 	if len(params) != 2 {
 		log.Fatal("invalid input, shouldn't happen")
 	}
+
+	// don't store usernames that didn't successfully authenticate
 	if params[1] != "pass" {
 		return
 	}
