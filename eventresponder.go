@@ -14,7 +14,7 @@ type EventResponder interface {
 	DatalineEnd()
 	WriteMultilineHeader(header, value string)
 	SafePrintln(msg string)
-	Respond(msgType, sessionId, token, format string, params... interface{})
+	Respond(msgType, sessionId, token, format string, params ...interface{})
 	FlushMessage(session *SMTPSession)
 }
 
@@ -75,7 +75,7 @@ func (evr *EventResponderImpl) WriteMultilineHeader(header, value string) {
 	}
 }
 
-func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string, params... interface{}) {
+func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string, params ...interface{}) {
 	var prefix string
 	if evr.event.GetProtocolVersion() > "0.5" {
 		prefix = msgType + "|" + sessionId + "|" + token
@@ -85,7 +85,6 @@ func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string,
 	evr.SafePrintln(prefix + "|" + fmt.Sprintf(format, params...))
 }
 
-
 func NewEventResponder(_event FilterEvent) EventResponder {
 	resp := EventResponderImpl{
 		event: _event,
@@ -93,4 +92,3 @@ func NewEventResponder(_event FilterEvent) EventResponder {
 
 	return &resp
 }
-

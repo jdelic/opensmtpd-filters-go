@@ -47,7 +47,7 @@ type EventHandler = func(FilterWrapper, FilterEvent)
 type FilterDispatchMap = map[string]map[string]EventHandler
 
 type FilterEventData struct {
-	atoms[] string
+	atoms []string
 }
 
 type FilterEvent interface {
@@ -109,7 +109,7 @@ func NewFilterEvent(_atoms []string) FilterEvent {
 func NewFilter(filter Filter) FilterWrapper {
 	return &FilterWrapperImpl{
 		Filter: filter,
-    }
+	}
 }
 
 var stdoutChannel = make(chan string)
@@ -125,7 +125,6 @@ type SafePrinter struct{}
 func (sp *SafePrinter) SafePrintln(msg string) {
 	stdoutChannel <- msg + "\n"
 }
-
 
 func Run(fw FilterWrapper) {
 	// start the stdout writer goroutine so we can write thread safe
