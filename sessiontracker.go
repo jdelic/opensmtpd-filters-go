@@ -192,7 +192,7 @@ func (sf *SessionTrackingMixin) Dataline(fw FilterWrapper, ev FilterEvent) {
 		log.Fatal("invalid input, shouldn't happen")
 	}
 	//token := params[0]
-	line := strings.Join(params[1:], "")
+	line := strings.Join(params[1:], "|")
 
 	s := sf.GetSession(ev.GetSessionId())
 	if line == "." {

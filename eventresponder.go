@@ -24,34 +24,34 @@ type EventResponderImpl struct {
 }
 
 func (evr *EventResponderImpl) Proceed() {
-	evr.Respond("filter-result", evr.event.GetToken(), evr.event.GetSessionId(), "%s", "proceed")
+	evr.Respond("filter-result", evr.event.GetSessionId(), evr.event.GetToken(), "%s", "proceed")
 }
 
 func (evr *EventResponderImpl) HardReject(response string) {
-	evr.Respond("filter-result", evr.event.GetToken(), evr.event.GetSessionId(),
+	evr.Respond("filter-result", evr.event.GetSessionId(), evr.event.GetToken(),
 		"reject|550 %s", response)
 }
 
 func (evr *EventResponderImpl) Greylist(response string) {
-	evr.Respond("filter-result", evr.event.GetToken(), evr.event.GetSessionId(),
+	evr.Respond("filter-result", evr.event.GetSessionId(), evr.event.GetToken(),
 		"reject|421 %s", response)
 }
 
 func (evr *EventResponderImpl) SoftReject(response string) {
-	evr.Respond("filter-result", evr.event.GetToken(), evr.event.GetSessionId(),
+	evr.Respond("filter-result", evr.event.GetSessionId(), evr.event.GetToken(),
 		"reject|451 %s", response)
 }
 
 func (evr *EventResponderImpl) FlushMessage(session *SMTPSession) {
 	token := evr.event.GetToken()
 	for _, line := range session.Message {
-		evr.Respond("filter-dataline", token, session.Id, "%s", line)
+		evr.Respond("filter-dataline", session.Id, token, "%s", line)
 	}
 	evr.DatalineEnd()
 }
 
 func (evr *EventResponderImpl) DatalineEnd() {
-	evr.Respond("filter-dataline", evr.event.GetToken(), evr.event.GetSessionId(), "%s", ".")
+	evr.Respond("filter-dataline", evr.event.GetSessionId(), evr.event.GetToken(), "%s", ".")
 }
 
 func (evr *EventResponderImpl) DatalineReply(line string) {
@@ -60,7 +60,7 @@ func (evr *EventResponderImpl) DatalineReply(line string) {
 	if strings.HasPrefix(line, ".") {
 		prefix = "."
 	}
-	evr.Respond("filter-dataline", evr.event.GetToken(), evr.event.GetSessionId(), "%s%s", prefix, line)
+	evr.Respond("filter-dataline", evr.event.GetSessionId(), evr.event.GetToken(), "%s%s", prefix, line)
 }
 
 func (evr *EventResponderImpl) WriteMultilineHeader(header, value string) {
@@ -68,16 +68,16 @@ func (evr *EventResponderImpl) WriteMultilineHeader(header, value string) {
 	sessionId := evr.event.GetSessionId()
 	for i, line := range strings.Split(value, "\n") {
 		if i == 0 {
-			evr.Respond("filter-dataline", token, sessionId, "%s: %s", header, line)
+			evr.Respond("filter-dataline", sessionId, token, "%s: %s", header, line)
 		} else {
-			evr.Respond("filter-dataline", token, sessionId, "%s", line)
+			evr.Respond("filter-dataline", sessionId, token, "%s", line)
 		}
 	}
 }
 
 func (evr *EventResponderImpl) Respond(msgType, sessionId, token, format string, params... interface{}) {
 	var prefix string
-	if evr.event.GetProtocolVersion() < "0.5" {
+	if evr.event.GetProtocolVersion() > "0.5" {
 		prefix = msgType + "|" + sessionId + "|" + token
 	} else {
 		prefix = msgType + "|" + token + "|" + sessionId

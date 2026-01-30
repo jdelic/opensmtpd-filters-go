@@ -93,10 +93,6 @@ func (freq FilterEventImpl) GetAtoms() []string {
 }
 
 func (freq *FilterEventImpl) Responder() EventResponder {
-	// handle protocol version differences
-	if freq.atoms[1] < "0.5" {
-
-	}
 	return NewEventResponder(freq)
 }
 
