@@ -43,9 +43,8 @@ func (evr *EventResponderImpl) SoftReject(response string) {
 }
 
 func (evr *EventResponderImpl) FlushMessage(session *SMTPSession) {
-	token := evr.event.GetToken()
 	for _, line := range session.Message {
-		evr.Respond("filter-dataline", session.Id, token, "%s", line)
+		evr.DatalineReply(line)
 	}
 	evr.DatalineEnd()
 }
