@@ -1,3 +1,3 @@
-module github.com/opensmtpd-filters-go
+module github.com/jdelic/opensmtpd-filters-go
 
 go 1.21
