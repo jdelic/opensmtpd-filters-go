@@ -123,11 +123,11 @@ func (sf *SessionTrackingMixin) LinkAuth(fw FilterWrapper, ev FilterEvent) {
 	}
 
 	// don't store usernames that didn't successfully authenticate
-	if params[1] != "pass" {
+	if params[0] != "pass" {
 		return
 	}
 	s := sf.GetSession(ev.GetSessionId())
-	s.UserName = params[0]
+	s.UserName = params[1]
 	sf.SetSession(s)
 }
 
